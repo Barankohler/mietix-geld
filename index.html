@@ -7,6 +7,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Mietix Geld</title>
 <style>
+input,select,textarea{font-size:16px;font-family:inherit}
+
 :root{--rot:#C4161C;--text:#2E2E30;--rand:#E4E4E7;--grau:#6F6F72;--bg:#F6F6F7;--gruen:#1B8A4B;--hell:#FDECEC}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);
@@ -17,7 +19,7 @@ main{max-width:680px;margin:0 auto;padding:16px}
 .karte{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;border:1px solid var(--rand)}
 .karte h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--rot);margin-bottom:10px}
 label{display:block;font-size:12px;font-weight:700;color:var(--grau);margin:12px 0 4px}
-input{width:100%;border:1px solid var(--rand);border-radius:12px;padding:12px 13px;font:600 17px inherit;color:var(--text);background:#fff;min-height:48px}
+input{width:100%;border:1px solid var(--rand);border-radius:12px;padding:12px 13px;font-weight:600;font-size:17px;font-family:inherit;color:var(--text);background:#fff;min-height:48px}
 input:focus{outline:2px solid var(--rot);outline-offset:-2px}
 #betrag{font-size:30px;font-weight:900;text-align:center;min-height:64px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -40,7 +42,7 @@ input:focus{outline:2px solid var(--rot);outline-offset:-2px}
 .eintrag .weg{color:var(--grau);font-size:20px;padding:4px 8px;cursor:pointer}
 .leer{color:var(--grau);text-align:center;padding:16px 10px}
 .leiste{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--rand);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:6}
-.leiste button{width:100%;max-width:680px;display:block;margin:0 auto;background:var(--rot);color:#fff;border:0;border-radius:16px;padding:17px;font:800 18px inherit;cursor:pointer}
+.leiste button{width:100%;max-width:680px;display:block;margin:0 auto;background:var(--rot);color:#fff;border:0;border-radius:16px;padding:17px;font-weight:800;font-size:18px;font-family:inherit;cursor:pointer}
 .meldung{position:fixed;left:16px;right:16px;bottom:96px;background:var(--gruen);color:#fff;border-radius:14px;padding:14px;font-weight:800;text-align:center;z-index:9;display:none}
 .versteckt{display:none!important}
 details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;margin-top:10px}
@@ -313,8 +315,8 @@ function zeigen(){const el=document.getElementById("abgleich");if(!el)return;
 const css=document.createElement("style");
 css.textContent=".abgl{background:#fff;border:1px solid #E4E4E7;border-radius:16px;padding:14px;margin-bottom:14px}"+
   ".abgl b{display:block;font-size:15px;margin-bottom:4px}.abgl-text{font-size:13px;color:#6F6F72;margin-bottom:8px}"+
-  ".abgl input{width:100%;border:1px solid #E4E4E7;border-radius:12px;padding:12px;font:600 16px inherit;margin-top:6px;min-height:46px;box-sizing:border-box}"+
-  ".abgl button{width:100%;margin-top:8px;background:#C4161C;color:#fff;border:0;border-radius:12px;padding:13px;font:800 16px inherit;cursor:pointer}"+
+  ".abgl input{width:100%;border:1px solid #E4E4E7;border-radius:12px;padding:12px;font-weight:600;font-size:16px;font-family:inherit;margin-top:6px;min-height:46px;box-sizing:border-box}"+
+  ".abgl button{width:100%;margin-top:8px;background:#C4161C;color:#fff;border:0;border-radius:12px;padding:13px;font-weight:800;font-size:16px;font-family:inherit;cursor:pointer}"+
   ".abgl-fehler{color:#C4161C;font-size:13px;font-weight:700;margin-top:6px}"+
   ".abgl-link{display:block;text-align:center;margin-top:10px;font-size:13px;color:#6F6F72}"+
   ".abgl.klein{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#6F6F72;padding:10px 14px}.abgl.klein a{color:#6F6F72}"+
