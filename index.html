@@ -92,7 +92,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;
     <div class="zahl raus"><b id="raus">0 €</b><i>Raus (hier eingetragen)</i></div>
     <div class="zahl"><b id="uebrig">0 €</b><i>Übrig</i></div>
   </div>
-  <div class="hinweis">Rein kommt aus den Verträgen: Anzahlung und Rest, sobald dort ein Bezahlt-Datum steht. Fixkosten stehen in der Excel, nicht hier.</div>
+  <div class="hinweis">Rein kommt aus den Mietverträgen: Anzahlung und Rest, sobald dort ein Bezahlt-Datum steht. Fixkosten stehen in der Excel, nicht hier.</div>
 </div>
 
 <div class="karte">
@@ -100,10 +100,10 @@ details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;
   <div id="liste"></div>
 </div>
 
-<details class="mxKlapp"><summary><span><b>Einnahmen aus Verträgen</b><i>Bezahlte Mieten ansehen, nichts zu tippen</i></span><em>›</em></summary>
+<details class="mxKlapp"><summary><span><b>Einnahmen aus Mietverträgen</b><i>Bezahlte Mieten ansehen, nichts zu tippen</i></span><em>›</em></summary>
 <div class="karte">
   <div id="einnahmen"></div>
-  <div class="hinweis">Nichts zu tippen. Was im Vertrag als bezahlt steht, kommt automatisch als „Miete“ in die Excel.</div>
+  <div class="hinweis">Nichts zu tippen. Was im Mietvertrag als bezahlt steht, kommt automatisch als „Miete“ in die Excel.</div>
 </div></details>
 </main>
 <div class="leiste"><button id="haupt">Ausgabe eintragen</button></div>
@@ -171,14 +171,14 @@ function zeichnen(){
     '<span class="betrag">'+eur(x.betrag)+'</span><span class="weg" title="Löschen">×</span></div>').join(""):'<div class="leer">Noch keine Ausgabe. Oben Auto, Art und Betrag.</div>';
   [...$("liste").querySelectorAll(".weg")].forEach(w=>w.onclick=()=>{const id=w.parentElement.dataset.id;
     if(!confirm("Diese Ausgabe löschen?"))return;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(x=>x.id!==id));zeichnen()});
-  $("einnahmen").innerHTML=e.length?e.slice(0,10).map(x=>'<div class="eintrag"><div><b>'+x.name+'</b><i>'+de(x.datum)+", "+x.was+", "+x.auto+" (Nr. "+x.nr+')</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span></div>').join(""):'<div class="leer">Noch keine bezahlte Miete in den Verträgen.</div>'}
+  $("einnahmen").innerHTML=e.length?e.slice(0,10).map(x=>'<div class="eintrag"><div><b>'+x.name+'</b><i>'+de(x.datum)+", "+x.was+", "+x.auto+" (Nr. "+x.nr+')</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span></div>').join(""):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>'}
 $("datum").value=iso(new Date());let DATUM_HEUTE=$("datum").value;
 zeichnen();
 window.addEventListener("mietix-abgleich",zeichnen);
 // Nach der Rückkehr in die Seite nur dann auf heute springen, wenn das Datum nicht von Hand gewählt wurde (30.10.2026)
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){if($("datum").value===DATUM_HEUTE||!$("datum").value){$("datum").value=iso(new Date())}DATUM_HEUTE=iso(new Date());zeichnen()}});
 </script>
-<script>/* Mietix Abgleich: Verträge, Anfragen, Kunden und Fahrzeuge auf allen Geräten gleich (Supabase Frankfurt, seit 26.10.2026).
+<script>/* Mietix Abgleich: Mietverträge, Anfragen, Kunden und Fahrzeuge auf allen Geräten gleich (Supabase Frankfurt, seit 26.10.2026).
    Wird von tools/vertrag/build_html.py und tools/anfragen/build_html.py in die Seite eingebaut.
    - Die Werkzeuge arbeiten weiter nur mit localStorage. Dieser Baustein merkt jede Änderung an den vier Speichern,
      schickt sie hoch und holt neue Stände der anderen Geräte (beim Start, beim Zurückkehren zur Seite, jede Minute).
@@ -302,9 +302,9 @@ Storage.prototype.setItem=function(k,v){const alt=(this===localStorage&&SPEICHER
    2. Papierkorb: was aus einer Liste verschwindet, landet in mietixPapierkorb (Tabelle papierkorb, 90 Tage) und
       kann in der Zentrale wiederhergestellt werden (window.mietixWiederherstellen).
    3. Die Datenbank schreibt dazu jede Änderung in die Tabelle verlauf (SQL in tools/vertrag/speicher.sql). */
-const NAMEN={mietixVorgaenge:"Vertrag",mietixAnfragen:"Anfrage",mietixKunden:"Kunde",mietixFahrzeuge:"Fahrzeug",mietixAusgaben:"Ausgabe",
+const NAMEN={mietixVorgaenge:"Mietvertrag",mietixAnfragen:"Anfrage",mietixKunden:"Kunde",mietixFahrzeuge:"Fahrzeug",mietixAusgaben:"Ausgabe",
   mietixSperren:"Sperre",mietixAufgaben:"Aufgabe",mietixZustand:"Zustand",mietixAutos:"Auto"};
-const BESCHRIFTUNG={mietixVorgaenge:x=>"Vertrag "+(x.nr||"")+" "+(x.name||""),mietixAnfragen:x=>"Anfrage "+(x.name||"")+(x.auto?", "+x.auto:""),
+const BESCHRIFTUNG={mietixVorgaenge:x=>"Mietvertrag "+(x.nr||"")+" "+(x.name||""),mietixAnfragen:x=>"Anfrage "+(x.name||"")+(x.auto?", "+x.auto:""),
   mietixAusgaben:x=>"Ausgabe "+(x.betrag!=null?String(x.betrag).replace(".",",")+" €":"")+(x.art?", "+String(x.art).trim():"")+(x.auto?", "+x.auto:""),
   mietixSperren:x=>"Sperre "+(x.auto||"")+(x.von?" ab "+x.von.split("-").reverse().join("."):""),mietixAufgaben:x=>"Aufgabe "+(x.aufgabe||""),
   mietixZustand:x=>"Zustand "+(x.auto||"")+": "+(x.text||"")};
@@ -318,7 +318,7 @@ function sicherheitsnetz(k,alt,neu){
       const grenze=new Date(Date.now()-90*864e5).toISOString();merk("mietixPapierkorb",pk.filter(x=>x.zeit>grenze));
       if(sitzung){clearTimeout(warte);warte=setTimeout(abgleichen,800)}}}catch(e){}}
   if(rueckLaeuft)return;
-  // Rückgängig: Änderungen innerhalb von 0,7 Sekunden gehören zusammen (z. B. Vertrag + Kunde + Fahrzeug)
+  // Rückgängig: Änderungen innerhalb von 0,7 Sekunden gehören zusammen (z. B. Mietvertrag + Kunde + Fahrzeug)
   const jetzt=Date.now();if(!burst||jetzt-burstZeit>700)burst={};burstZeit=jetzt;if(!(k in burst))burst[k]=alt;
   rueckZeigen(Object.keys(burst).map(x=>NAMEN[x]||x).filter((x,i,a)=>a.indexOf(x)===i).join(", "))}
 let rueckLaeuft=false,rueckTimer=null;
@@ -327,13 +327,13 @@ function rueckZeigen(text){let el=document.getElementById("mietixRueck");
     el.querySelector("button").onclick=rueckgaengig}
   el.querySelector("span").textContent="Gespeichert: "+text;el.classList.add("an");clearTimeout(rueckTimer);rueckTimer=setTimeout(()=>el.classList.remove("an"),8000)}
 function rueckgaengig(){if(!burst)return;
-  if("mietixVorgaenge" in burst&&!confirm("Die letzte Änderung am Vertrag wird zurückgenommen (zum Beispiel das Speichern). Was im Formular steht, bleibt stehen. Weiter?"))return;
+  if("mietixVorgaenge" in burst&&!confirm("Die letzte Änderung am Mietvertrag wird zurückgenommen (zum Beispiel das Speichern). Was im Formular steht, bleibt stehen. Weiter?"))return;
   const b=burst;burst=null;rueckLaeuft=true;
   try{Object.keys(b).forEach(k=>{if(b[k]===null)localStorage.removeItem(k);else roh.call(localStorage,k,b[k])})}finally{rueckLaeuft=false}
   const el=document.getElementById("mietixRueck");if(el){el.querySelector("span").textContent="Zurückgeholt.";clearTimeout(rueckTimer);rueckTimer=setTimeout(()=>el.classList.remove("an"),1500)}
   window.dispatchEvent(new CustomEvent("mietix-abgleich",{detail:Object.keys(b)}));clearTimeout(warte);warte=setTimeout(abgleichen,800)}
 window.mietixWiederherstellen=function(id){const pk=lies("mietixPapierkorb",[]),e=pk.find(x=>x.id===id);if(!e)return false;
-  if(e.ablage==="mietixEntwurfVertrag"){merk("mietixPapierkorb",pk.filter(x=>x.id!==id));   // angefangener Vertrag: liegt nur auf dem Gerät, frisch für 48 Stunden
+  if(e.ablage==="mietixEntwurfVertrag"){merk("mietixPapierkorb",pk.filter(x=>x.id!==id));   // angefangener Mietvertrag: liegt nur auf dem Gerät, frisch für 48 Stunden
     roh.call(localStorage,"mietixEntwurfVertrag",JSON.stringify(Object.assign({},e.eintrag,{zeit:new Date().toISOString()})));
     window.dispatchEvent(new CustomEvent("mietix-abgleich",{detail:["mietixPapierkorb"]}));clearTimeout(warte);warte=setTimeout(abgleichen,800);return true}
   const c=SPEICHER[e.ablage];if(!c)return false;const m=alsMap(e.ablage,lies(e.ablage,c.liste?[]:{}));m[e.schluessel]=e.eintrag;
