@@ -36,6 +36,7 @@ input:focus{outline:2px solid var(--rot);outline-offset:-2px}
 .zahl.rein b{color:var(--gruen)}.zahl.raus b{color:var(--rot)}
 .hinweis{font-size:13px;color:var(--grau);margin-top:8px;line-height:1.4}
 .eintrag{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--rand)}
+.eintrag>div{min-width:0;overflow-wrap:anywhere}.eintrag .betrag,.eintrag .weg{flex:none}
 .eintrag:last-child{border-bottom:0}
 .eintrag b{display:block;font-size:15px}.eintrag i{font-style:normal;font-size:12px;color:var(--grau)}
 .eintrag .betrag{font-weight:900;font-size:16px;white-space:nowrap}
@@ -171,7 +172,8 @@ function zeichnen(){
   $("liste").innerHTML=a.length?a.slice(0,15).map(x=>'<div class="eintrag" data-id="'+x.id+'"><div><b>'+x.art.trim()+(x.auto?", "+x.auto:"")+'</b><i>'+de(x.datum)+(x.notiz?", "+x.notiz:"")+'</i></div>'+
     '<span class="betrag">'+eur(x.betrag)+'</span><span class="weg" title="Löschen">×</span></div>').join(""):'<div class="leer">Noch keine Ausgabe. Oben Auto, Art und Betrag.</div>';
   [...$("liste").querySelectorAll(".weg")].forEach(w=>w.onclick=()=>{const id=w.parentElement.dataset.id;
-    if(!confirm("Diese Ausgabe löschen?"))return;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(x=>x.id!==id));zeichnen()});
+    const x=lies("mietixAusgaben",[]).find(y=>y.id===id)||{};
+    if(!confirm("Ausgabe "+eur(x.betrag||0)+" €"+(x.art?" "+x.art:"")+(x.auto?", "+x.auto:"")+" löschen?"))return;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(x=>x.id!==id));zeichnen()});
   $("einnahmen").innerHTML=e.length?e.slice(0,10).map(x=>'<div class="eintrag"><div><b>'+x.name+'</b><i>'+de(x.datum)+", "+x.was+", "+x.auto+" (Nr. "+x.nr+')</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span></div>').join(""):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>'}
 $("datum").value=iso(new Date());let DATUM_HEUTE=$("datum").value;
 zeichnen();
