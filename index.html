@@ -46,6 +46,11 @@ input:focus{outline:2px solid var(--rot);outline-offset:-2px}
 .leiste button{width:100%;max-width:680px;display:block;margin:0 auto;background:var(--rot);color:#fff;border:0;border-radius:16px;padding:17px;font-weight:800;font-size:18px;font-family:inherit;cursor:pointer}
 .meldung{position:fixed;left:16px;right:16px;bottom:96px;background:var(--gruen);color:#fff;border-radius:14px;padding:14px;font-weight:800;text-align:center;z-index:9;display:none}
 .versteckt{display:none!important}
+/* Einnahmen aus Mietverträgen: Zeile öffnet die Mappe (1.11.2026) */
+#einnahmen .eintrag{border-bottom:.5px solid #D1D1D6;min-height:50px}#einnahmen .eintrag:last-child{border-bottom:0}
+a.eLink{color:inherit;text-decoration:none}a.eLink:active{background:#F2F2F7}
+#einnahmen .eintrag b{font-size:17px;font-weight:600}#einnahmen .eintrag i{font-size:14px;color:#8A8A8E}
+.ePfeil{flex:none;font-style:normal;color:#C7C7CC;font-size:22px;line-height:1;margin-left:-2px}
 details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;margin-top:10px}
 
 .mxKnopf,.mxKlapp>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;background:#fff;border:1.5px solid #E4E4E7;border-radius:16px;padding:14px 16px;min-height:60px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);color:#1C1C1E;margin:0 0 10px;-webkit-tap-highlight-color:transparent}
@@ -113,6 +118,10 @@ html body .app>h2,html body main>h2{margin-left:16px!important;margin-right:16px
 .chips [data-jn=ja].an:before{content:"✓"}.chips [data-jn=nein].an:before{content:"✕"}
 .frage .chips [data-jn=ja].an{background:#34C759!important;color:#fff!important;outline:0}
 .frage .chips [data-jn=nein].an{background:#FF3B30!important;color:#fff!important;outline:0}
+/* Kunden: „‹ Kunden“ wie „‹ Start“ als rote Schrift, Überschriften klein und grau */
+html body .kTop #kZu{border:0!important;background:none!important;padding:4px 0!important;color:#C4161C!important;font-size:17px!important;font-weight:600!important}
+html body .ab{font-size:13px!important;letter-spacing:.3px;color:#6E6E73!important;font-weight:600!important;text-transform:uppercase;margin:20px 16px 7px!important}
+html body .ab span{text-transform:none;letter-spacing:0}
 /* Kreise mit Anfangsbuchstaben: grau statt bunt (Baran: „viel zu bunt“) */
 .av,.vav{background:#C7C7CC!important;color:#fff!important}
 .leiste button{border-radius:13px!important}
@@ -155,10 +164,10 @@ input[type=date],input[type=time]{min-width:0;max-width:100%}
   <div id="liste"></div>
 </div>
 
-<details class="mxKlapp"><summary><span><b>Einnahmen aus Mietverträgen</b><i>Bezahlte Mieten ansehen, nichts zu tippen</i></span><em>›</em></summary>
+<details class="mxKlapp"><summary><span><b>Einnahmen aus Mietverträgen</b><i>Bezahlte Mieten, antippen öffnet den Mietvertrag</i></span><em>›</em></summary>
 <div class="karte">
   <div id="einnahmen"></div>
-  <div class="hinweis">Nichts zu tippen. Was im Mietvertrag als bezahlt steht, kommt automatisch als „Miete“ in die Excel.</div>
+  <div class="hinweis">Hier nichts einzutragen. Was im Mietvertrag als bezahlt steht, kommt automatisch als „Miete“ in die Excel.</div>
 </div></details>
 </main>
 <div class="leiste"><button id="haupt">Ausgabe eintragen</button></div>
@@ -173,6 +182,8 @@ const de=s=>s?s.split("-").reverse().join("."):"";
 const zahl=v=>{if(v===null||v===undefined)return null;const s=String(v).trim();if(!s)return null;
   const n=parseFloat(s.indexOf(",")>=0?s.replace(/\./g,"").replace(",","."):s.replace(/\.(?=\d{3}(\D|$))/g,""));return isNaN(n)?null:n};
 const eur=n=>{const v=typeof n==="number"?n:zahl(n)||0,ganz=Math.abs(v-Math.round(v))<0.005;return (ganz?Math.round(v):v).toLocaleString("de-DE",ganz?{maximumFractionDigits:0}:{minimumFractionDigits:2,maximumFractionDigits:2})+" €"};   // ganze Euro ohne ,00; Belege mit Cent bleiben genau (1.11.2026)
+const esc=t=>String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const MAPPE=nr=>"https://barankohler.github.io/mietix-vertrag/?nr="+encodeURIComponent(nr)+"&amp;zeige=mappe";
 function meldung(t){const m=$("meldung");m.textContent=t;m.style.display="block";setTimeout(()=>m.style.display="none",2400)}
 let AUTO=null,ART=null,D=null;
 const ALLGEMEIN="Allgemein (kein Auto)";
@@ -229,7 +240,9 @@ function zeichnen(){
   [...$("liste").querySelectorAll(".weg")].forEach(w=>w.onclick=()=>{const id=w.parentElement.dataset.id;
     const x=lies("mietixAusgaben",[]).find(y=>y.id===id)||{};
     if(!confirm("Ausgabe "+eur(x.betrag||0)+" €"+(x.art?" "+x.art:"")+(x.auto?", "+x.auto:"")+" löschen?"))return;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(x=>x.id!==id));zeichnen()});
-  $("einnahmen").innerHTML=e.length?e.slice(0,10).map(x=>'<div class="eintrag"><div><b>'+x.name+'</b><i>'+de(x.datum)+", "+x.was+", "+x.auto+" (Nr. "+x.nr+')</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span></div>').join(""):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>'}
+  // Jede Einnahme gehört zu einem Mietvertrag: Antippen öffnet dessen Mappe (1.11.2026, „Es muss alles verbunden sein“)
+  $("einnahmen").innerHTML=e.length?e.slice(0,10).map(x=>{const innen='<div><b>'+esc(x.name)+'</b><i>'+de(x.datum)+", "+x.was+", "+esc(x.auto)+" (Nr. "+esc(x.nr)+')</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span>';
+    return x.nr?'<a class="eintrag eLink" href="'+MAPPE(x.nr)+'" data-nr="'+esc(x.nr)+'">'+innen+'<em class="ePfeil">›</em></a>':'<div class="eintrag">'+innen+'</div>'}).join(""):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>'}
 $("datum").value=iso(new Date());let DATUM_HEUTE=$("datum").value;
 zeichnen();
 window.addEventListener("mietix-abgleich",zeichnen);
