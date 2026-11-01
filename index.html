@@ -113,7 +113,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;
 <script>
 const $=id=>document.getElementById(id);
 const lies=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"")||d}catch(e){return d}};
-const schreib=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const schreib=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};   // false: nicht gespeichert, roter Hinweis kommt aus stil/schutz.py
 const pad=n=>String(n).padStart(2,"0");
 const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const de=s=>s?s.split("-").reverse().join("."):"";
@@ -152,10 +152,12 @@ $("haupt").onclick=()=>{
      &&Date.now()-new Date(letzte.erstellt||0).getTime()<120000&&!confirm("Genau diese Ausgabe wurde gerade eben eingetragen. Wirklich noch einmal?"))return;
   a.push({id:String(Date.now())+Math.random().toString(36).slice(2,6),datum:$("datum").value||iso(new Date()),art:ART,
     auto:AUTO===ALLGEMEIN?"":AUTO,betrag:Math.round(b*100)/100,notiz:$("notiz").value.trim(),wer:WER(),erstellt:new Date().toISOString()});
-  schreib("mietixAusgaben",a);
+  if(!schreib("mietixAusgaben",a))return;   // nicht gespeichert: Eingabe bleibt stehen
+  if(window.G_ENT)G_ENT.weg();
   meldung(eur(b)+" "+ART.trim()+(AUTO===ALLGEMEIN?"":", "+AUTO)+" eingetragen");
   $("betrag").value="";$("notiz").value="";ART=null;chips();zeichnen()};
 $("betrag").addEventListener("keydown",e=>{if(e.key==="Enter")$("haupt").click()});
+document.addEventListener("DOMContentLoaded",()=>{if(window.mxEntwurf){window.G_ENT=mxEntwurf("body","geld",["betrag","notiz","datum"]);G_ENT.holen()}});   // Entwurf (1.11.2026)
 
 /* ---------- Anzeige ---------- */
 function einnahmenListe(){const l=[];
@@ -536,9 +538,9 @@ zeigen();abgleichen();auslagernBald();
   addEventListener("unhandledrejection",e=>melde(e.reason&&(e.reason.message||e.reason)));
 
   // Entwurf: Felder eines Bereichs beim Tippen sichern
-  window.mxEntwurf=function(bereich,schluessel){const el=typeof bereich==="string"?document.querySelector(bereich):bereich,K="mietixFeld:"+schluessel;
+  window.mxEntwurf=function(bereich,schluessel,nur){const el=typeof bereich==="string"?document.querySelector(bereich):bereich,K="mietixFeld:"+schluessel;
     const leer={holen(){return false},weg(){},merken(){}};if(!el)return leer;
-    const felder=()=>[...el.querySelectorAll("input[id],textarea[id],select[id]")].filter(f=>!/^(password|file|hidden|button|submit|search)$/.test(f.type));
+    const felder=()=>[...el.querySelectorAll("input[id],textarea[id],select[id]")].filter(f=>!/^(password|file|hidden|button|submit|search)$/.test(f.type)&&(!nur||nur.includes(f.id)));
     let aus=false;
     const merken=()=>{if(aus)return;const d={};let etwas=false;felder().forEach(f=>{const v=f.type==="checkbox"?f.checked:f.value;d[f.id]=v;if(v&&v!==true)etwas=true});
       try{if(etwas)localStorage.setItem(K,JSON.stringify(d));else localStorage.removeItem(K)}catch(e){}};
