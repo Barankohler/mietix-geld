@@ -317,7 +317,11 @@ document.addEventListener("DOMContentLoaded",()=>{if(window.mxEntwurf){window.G_
 /* ---------- Anzeige ---------- */
 function einnahmenListe(){const l=[];
   lies("mietixVorgaenge",[]).forEach(v=>{const z=v.zahlung||{};
-    [["anz","Anzahlung"],["rest","Rest"]].forEach(([k,t])=>{const r=z[k];if(r&&r.am&&zahl(r.betrag))l.push({datum:r.am,betrag:zahl(r.betrag),auto:v.auto,name:v.name,was:t,nr:v.nr})})});
+    [["anz","Anzahlung"],["rest","Rest"]].forEach(([k,t])=>{const r=z[k];if(r&&r.am&&zahl(r.betrag))l.push({datum:r.am,betrag:zahl(r.betrag),auto:v.auto,name:v.name,was:t,nr:v.nr})});
+    const e=v.endabrechnung||{};if(e.bezahlt&&e.bezahlt.am&&+e.summe>0)l.push({datum:e.bezahlt.am,betrag:+e.summe,auto:v.auto,name:v.name,was:"Endabrechnung",nr:v.nr});
+    const kr=v.kautionRueck||{},ueber=(+kr.einbehalt||0)-(e.bezahlt?+e.summe||0:0);if(kr.verrechnet&&ueber>0)l.push({datum:kr.am||(v.rueck||{}).datum||v.bisD||"",betrag:ueber,auto:v.auto,name:v.name,was:"Aus der Kaution",nr:v.nr})});
+  // Anzahlung einer Reservierung, die noch keinen Mietvertrag hat, zählt schon als eingegangen (04.11.2026)
+  lies("mietixAnfragen",[]).forEach(a=>{const z=a.anzahlung||{};if(!a._weg&&a.status!=="abgesagt"&&!a.vertrag&&z.am&&zahl(z.betrag))l.push({datum:z.am,betrag:zahl(z.betrag),auto:a.auto||"",name:a.name||"",was:"Anzahlung",nr:""})});
   return l.sort((a,b)=>b.datum.localeCompare(a.datum))}
 // Lange Listen: nichts wird still abgeschnitten, der Rest kommt auf Tipp (04.11.2026)
 const GELD_ZEIG={liste:15,einnahmen:10};
