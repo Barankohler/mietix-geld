@@ -53,6 +53,10 @@ input:focus{outline:2px solid var(--rot);outline-offset:-2px}
 #einnahmen .eintrag{border-bottom:.5px solid #D1D1D6;min-height:50px}#einnahmen .eintrag:last-child{border-bottom:0}
 a.eLink{color:inherit;text-decoration:none}a.eLink:active{background:#F2F2F7}
 #einnahmen .eintrag b{font-size:17px;font-weight:600}#einnahmen .eintrag i{font-size:14px;color:#8A8A8E}
+/* Prüfung 06.11.2026: Arten-Knöpfe hellgrau wie jeder Knopf, gewählt bleibt dunkel */
+#arten .chip:not(.an),#artenMehr .chip:not(.an){background:#F2F2F7!important}
+/* Nacharbeit 06.11.2026: Auto-Knöpfe ebenso hellgrau, gewähltes Auto dunkel */
+#autos .auto:not(.an){background:#F2F2F7!important;border-color:#F2F2F7!important}#autos .auto.an{background:#1C1C1E!important;border-color:#1C1C1E!important;color:#fff!important}
 .ePfeil{flex:none;font-style:normal;color:#C7C7CC;font-size:22px;line-height:1;margin-left:-2px}
 details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;margin-top:10px}
 
@@ -273,7 +277,7 @@ const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const de=s=>s?s.split("-").reverse().join("."):"";
 const zahl=v=>{if(v===null||v===undefined)return null;const s=String(v).trim();if(!s)return null;
   const n=parseFloat(s.indexOf(",")>=0?s.replace(/\./g,"").replace(",","."):s.replace(/\.(?=\d{3}(\D|$))/g,""));return isNaN(n)?null:n};
-const eur=n=>{const v=typeof n==="number"?n:zahl(n)||0,ganz=Math.abs(v-Math.round(v))<0.005;return (ganz?Math.round(v):v).toLocaleString("de-DE",ganz?{maximumFractionDigits:0}:{minimumFractionDigits:2,maximumFractionDigits:2})+" €"};   // ganze Euro ohne ,00; Belege mit Cent bleiben genau (1.11.2026)
+const eur=n=>{const v=typeof n==="number"?n:zahl(n)||0,ganz=Math.abs(v-Math.round(v))<0.005;return (ganz?Math.round(v)||0:v).toLocaleString("de-DE",ganz?{maximumFractionDigits:0}:{minimumFractionDigits:2,maximumFractionDigits:2})+" €"};   // ganze Euro ohne ,00; Belege mit Cent bleiben genau (1.11.2026)
 const esc=t=>String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
 const MAPPE=nr=>"https://barankohler.github.io/mietix-vertrag/?nr="+encodeURIComponent(nr)+"&amp;zeige=mappe&amp;von=Geld";
 function meldung(t){const m=$("meldung");m.textContent=t;m.style.display="block";setTimeout(()=>m.style.display="none",2400)}
@@ -324,7 +328,7 @@ function einnahmenListe(){const l=[];
     const e=v.endabrechnung||{},eB=e.bezahlt?(e.bezahlt.betrag!=null?+e.bezahlt.betrag||0:+e.summe||0):0;if(e.bezahlt&&e.bezahlt.am&&eB>0)l.push({datum:e.bezahlt.am,betrag:eB,auto:v.auto,name:v.name,was:"Endabrechnung",nr:v.nr});   // geänderte Kosten: gezählt wird, was wirklich bezahlt ist (05.11.2026)
     const kr=v.kautionRueck||{},ueber=(+kr.einbehalt||0)-eB;if(kr.verrechnet&&ueber>0)l.push({datum:kr.am||(v.rueck||{}).datum||v.bisD||"",betrag:ueber,auto:v.auto,name:v.name,was:"Aus der Kaution",nr:v.nr})});
   // Anzahlung einer Reservierung, die noch keinen Mietvertrag hat, zählt schon als eingegangen (04.11.2026)
-  lies("mietixAnfragen",[]).forEach(a=>{const z=a.anzahlung||{};if(!a._weg&&a.status!=="abgesagt"&&!a.vertrag&&z.am&&zahl(z.betrag))l.push({datum:z.am,betrag:zahl(z.betrag),auto:a.auto||"",name:a.name||"",was:"Anzahlung",nr:""})});
+  lies("mietixAnfragen",[]).forEach(a=>{const z=a.anzahlung||{};if(!a._weg&&a.status!=="abgesagt"&&!a.vertrag&&z.am&&zahl(z.betrag))l.push({datum:z.am,betrag:zahl(z.betrag),auto:a.auto||"",name:a.name||"",was:"Anzahlung",nr:"",aid:a.id,gebucht:a.status==="gebucht"})});
   return l.sort((a,b)=>b.datum.localeCompare(a.datum))}
 // Lange Listen: nichts wird still abgeschnitten, der Rest kommt auf Tipp (04.11.2026)
 const GELD_ZEIG={liste:15,einnahmen:10};
@@ -347,11 +351,13 @@ function zeichnen(){
     '<span class="betrag">'+eur(x.betrag)+'</span><span class="weg" title="Löschen">×</span></div>').join("")+mehrKnopf("liste",a.length):L.aktiv()?'<div class="leer">Nichts gefunden. Andere Suche oder Filter zurücksetzen.</div>':'<div class="leer">Noch keine Ausgabe. Oben Auto, Art und Betrag.</div>';
   [...$("liste").querySelectorAll(".weg")].forEach(w=>w.onclick=()=>{const id=w.parentElement.dataset.id;
     const x=lies("mietixAusgaben",[]).find(y=>y.id===id)||{};
-    if(!confirm("Ausgabe "+eur(x.betrag||0)+" €"+(x.art?" "+x.art:"")+(x.auto?", "+x.auto:"")+" löschen?"))return;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(x=>x.id!==id));zeichnen();
+    if(!confirm("Ausgabe "+eur(x.betrag||0)+(x.art?" "+x.art:"")+(x.auto?", "+x.auto:"")+" löschen?"))return;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(x=>x.id!==id));zeichnen();
     if(window.mxRueckBar)mxRueckBar("Ausgabe gelöscht",()=>{const l=lies("mietixAusgaben",[]);if(!l.some(y=>y.id===id)){l.push(x);schreib("mietixAusgaben",l)}zeichnen()})});
   // Jede Einnahme gehört zu einem Mietvertrag: Antippen öffnet dessen Mappe (1.11.2026, „Es muss alles verbunden sein“)
-  $("einnahmen").innerHTML=e.length?e.slice(0,GELD_ZEIG.einnahmen).map(x=>{const innen='<div><b>'+esc(x.name)+'</b><i>'+de(x.datum)+", "+x.was+", "+esc(x.auto)+" (Nr. "+esc(x.nr)+')</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span>';
-    return x.nr?'<a class="eintrag eLink" href="'+MAPPE(x.nr)+'" data-nr="'+esc(x.nr)+'">'+innen+'<em class="ePfeil">›</em></a>':'<div class="eintrag">'+innen+'</div>'}).join("")+mehrKnopf("einnahmen",e.length):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>';
+  $("einnahmen").innerHTML=e.length?e.slice(0,GELD_ZEIG.einnahmen).map(x=>{const innen='<div><b>'+esc(x.name)+'</b><i>'+de(x.datum)+", "+x.was+(x.auto?", "+esc(x.auto):"")+(x.nr?" (Nr. "+esc(x.nr)+")":"")+'</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span>';
+    // Anzahlung ohne Mietvertrag (Prüfung 06.11.2026): führt zur Buchung bzw. zur Anfrage, wie im Kalender
+    const zuAnfrage=x.aid?(x.gebucht?"https://barankohler.github.io/mietix-vertrag/?buchung=":"https://barankohler.github.io/mietix-anfragen/?zeige=")+encodeURIComponent(x.aid):"";
+    return x.nr?'<a class="eintrag eLink" href="'+MAPPE(x.nr)+'" data-nr="'+esc(x.nr)+'">'+innen+'<em class="ePfeil">›</em></a>':zuAnfrage?'<a class="eintrag eLink" href="'+esc(zuAnfrage)+'" data-aid="'+esc(x.aid)+'">'+innen+'<em class="ePfeil">›</em></a>':'<div class="eintrag">'+innen+'</div>'}).join("")+mehrKnopf("einnahmen",e.length):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>';
   document.querySelectorAll(".mehrZeigen").forEach(b=>b.onclick=()=>{GELD_ZEIG[b.dataset.m]+=30;zeichnen()})}
 $("datum").value=iso(new Date());let DATUM_HEUTE=$("datum").value;
 zeichnen();
