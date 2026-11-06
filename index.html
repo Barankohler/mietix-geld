@@ -43,7 +43,7 @@ input:focus{outline:2px solid var(--rot);outline-offset:-2px}
 .eintrag:last-child{border-bottom:0}
 .eintrag b{display:block;font-size:15px}.eintrag i{font-style:normal;font-size:12px;color:var(--grau)}
 .eintrag .betrag{font-weight:900;font-size:16px;white-space:nowrap}
-.eintrag .weg{color:var(--grau);font-size:20px;padding:4px 8px;cursor:pointer}
+.eintrag .weg{color:var(--grau);font-size:20px;cursor:pointer;background:#EFEFF1;border-radius:12px;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;line-height:1}   /* hellgrau wie jeder Knopf, Treffer 44 px (06.11.2026) */
 .leer{color:var(--grau);text-align:center;padding:16px 10px}
 .leiste{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--rand);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:6}
 .leiste button{width:100%;max-width:680px;display:block;margin:0 auto;background:var(--rot);color:#fff;border:0;border-radius:16px;height:54px;padding:0 17px;box-sizing:border-box;font-weight:800;font-size:18px;font-family:inherit;cursor:pointer}
@@ -356,7 +356,7 @@ function zeichnen(){
   // Jede Einnahme gehört zu einem Mietvertrag: Antippen öffnet dessen Mappe (1.11.2026, „Es muss alles verbunden sein“)
   $("einnahmen").innerHTML=e.length?e.slice(0,GELD_ZEIG.einnahmen).map(x=>{const innen='<div><b>'+esc(x.name)+'</b><i>'+de(x.datum)+", "+x.was+(x.auto?", "+esc(x.auto):"")+(x.nr?" (Nr. "+esc(x.nr)+")":"")+'</i></div><span class="betrag" style="color:var(--gruen)">'+eur(x.betrag)+'</span>';
     // Anzahlung ohne Mietvertrag (Prüfung 06.11.2026): führt zur Buchung bzw. zur Anfrage, wie im Kalender
-    const zuAnfrage=x.aid?(x.gebucht?"https://barankohler.github.io/mietix-vertrag/?buchung=":"https://barankohler.github.io/mietix-anfragen/?zeige=")+encodeURIComponent(x.aid):"";
+    const zuAnfrage=x.aid?(x.gebucht?"https://barankohler.github.io/mietix-vertrag/?buchung=":"https://barankohler.github.io/mietix-anfragen/?zeige=")+encodeURIComponent(x.aid)+(x.gebucht?"&von=Geld":""):"";   // Zurück führt nach Geld (06.11.2026)
     return x.nr?'<a class="eintrag eLink" href="'+MAPPE(x.nr)+'" data-nr="'+esc(x.nr)+'">'+innen+'<em class="ePfeil">›</em></a>':zuAnfrage?'<a class="eintrag eLink" href="'+esc(zuAnfrage)+'" data-aid="'+esc(x.aid)+'">'+innen+'<em class="ePfeil">›</em></a>':'<div class="eintrag">'+innen+'</div>'}).join("")+mehrKnopf("einnahmen",e.length):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>';
   document.querySelectorAll(".mehrZeigen").forEach(b=>b.onclick=()=>{GELD_ZEIG[b.dataset.m]+=30;zeichnen()})}
 $("datum").value=iso(new Date());let DATUM_HEUTE=$("datum").value;
@@ -907,8 +907,8 @@ zeigen();abgleichen();auslagernBald();
     "html body header .mxStart,html body .topbar .mxStart{float:none!important;margin:0 10px 0 0!important;border:0!important;padding:5px 12px 5px 9px!important;background:#E9E9EE!important;border-radius:10px!important;color:#C4161C!important;opacity:1!important;font-size:16px!important;font-weight:600!important;gap:3px!important;line-height:1.2!important;min-height:44px!important;box-sizing:border-box;display:inline-flex!important;align-items:center!important}html body .mxStart b{font-size:20px!important;font-weight:400!important;line-height:16px!important;margin-top:-2px!important}"+
     /* PC und Mac (1.11.2026, Baran: auf allen Geräten gleich): Kopfzeile und Inhalt in einer 680-px-Spalte in der Mitte.
        Muss ganz am Ende stehen: header{padding-left:16px!important} weiter oben (und look.py davor im head) würde sonst gewinnen */
-    (istStart||art==="kalender"||art==="schaeden"?"":"@media(min-width:760px){header,.topbar{padding-left:max(16px,calc((100% - 680px)/2))!important;padding-right:max(16px,calc((100% - 680px)/2))!important}"+
-      "main{max-width:680px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box;padding-left:16px!important;padding-right:16px!important}header .plus{right:max(16px,calc((100% - 680px)/2))!important}}");
+    (istStart||art==="kalender"||art==="schaeden"?"":"@media(min-width:760px){header,.topbar{padding-left:max(16px,calc((100% - 680px)/2 + 16px))!important;padding-right:max(16px,calc((100% - 680px)/2 + 16px))!important}"+
+      "main{max-width:680px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box;padding-left:16px!important;padding-right:16px!important}header .plus{right:max(16px,calc((100% - 680px)/2 + 16px))!important}}");
   document.head.appendChild(st);
 
   // ‹ Start und Symbol in der Kopfzeile
