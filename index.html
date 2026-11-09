@@ -245,6 +245,23 @@ const de=s=>s&&/^\d{4}-\d\d-\d\d/.test(s)?s.slice(8,10)+"."+s.slice(5,7)+".":"";
 const istTag=s=>/^\d{4}-\d\d-\d\d$/.test(String(s||""));
 const ichMail=()=>{try{return((JSON.parse(localStorage.getItem("mietixSitzung")||"null")||{}).email||"").toLowerCase()}catch(e){return""}};
 const verlInRest=v=>(v.verlaengerungen||[]).filter(y=>!!(y.imRest||y.bezahlt)).reduce((s,y)=>s+(+y.aufpreis||0),0);   // so liegt die Verlängerung im Mietvertrag im Rest
+/* Jede Miete in Posten: eine Rechnung für Monat und Geld (09.11.2026), gezählt im Monat der Zahlung.
+   Verlängerungen stecken im Mietvertrag im Rest, sobald sie bezahlt sind oder mit dem Rest kommen; Mietpreis Rest = Rest ohne diese.
+   Nachzahlung mit der Kaution verrechnet steckt im Einbehalt und zählt nur dort, nichts doppelt. */
+function posten(v){const l=[],z=v.zahlung||{},e=v.endabrechnung||{},kr=v.kautionRueck||{},an=z.anz||{},re=z.rest||{};
+  if(n0(an.betrag))l.push({art:"miete",t:"Anzahlung",b:n0(an.betrag),am:istTag(an.am)?an.am:""});
+  const mietRest=n0(re.betrag)-verlInRest(v);
+  if(mietRest>0)l.push({art:"miete",t:"Mietpreis Rest",b:mietRest,am:istTag(re.am)?re.am:""});
+  (v.verlaengerungen||[]).forEach((y,i)=>{const b=+y.aufpreis||0;if(b<=0)return;
+    const am=y.imRest?(istTag(re.am)?re.am:""):y.bezahlt?(istTag(y.bezahltAm)?y.bezahltAm:istTag(y.am)?y.am:""):"";
+    l.push({art:"verl",t:"Verlängerung"+(v.verlaengerungen.length>1?" "+(i+1):""),b,am})});
+  const s=+e.summe||0;
+  if(s>0){const bz=e.bezahlt&&istTag(e.bezahlt.am)?e.bezahlt:null,eB=bz?(bz.betrag!=null?+bz.betrag||0:s):0;
+    if(bz&&bz.art==="Kaution"&&kr.verrechnet){}   // steckt im Einbehalt der Kaution
+    else if(eB>0)l.push({art:"miete",t:"Nachzahlung Rückgabe",b:eB,am:bz.am});
+    if(!(bz&&bz.art==="Kaution"&&kr.verrechnet)&&s-eB>0)l.push({art:"miete",t:"Nachzahlung Rückgabe",b:s-eB,am:""})}
+  if(kr.verrechnet&&+kr.einbehalt>0){const am=[kr.am,(v.rueck||{}).datum,v.bisD].find(istTag)||"";l.push({art:"kaution",t:"Kaution einbehalten",b:+kr.einbehalt,am})}
+  return l}
 let VON="Monat",NACHHER=()=>{},UNTEN=24,OFFEN=null,ZURUECK=null,MT=0;
 const zu=()=>encodeURIComponent(VON);
 const MAPPE=nr=>"https://barankohler.github.io/mietix-vertrag/?nr="+encodeURIComponent(nr)+"&zeige=mappe&von="+zu();
@@ -340,7 +357,7 @@ function gespeichert(text,rueck){let me=$("mxZaMeld");if(!me){me=document.create
 function auslesen(e){const k=e.target.closest&&e.target.closest("[data-za]");if(!k)return null;e.preventDefault();e.stopPropagation();return k.dataset.za}
 document.addEventListener("click",e=>{const s=auslesen(e);if(s)oeffne(s)},true);
 document.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const s=auslesen(e);if(s)oeffne(s)},true);
-window.mxZahlung={oeffne,verlInRest,gespeichert,
+window.mxZahlung={oeffne,verlInRest,posten,gespeichert,
   setup(o){VON=o.von||VON;NACHHER=o.nachher||NACHHER;UNTEN=o.unten||UNTEN},
   knopf:schl=>'<span class="mxAe" role="button" tabindex="0" data-za="'+esc(schl)+'">Ändern</span>'};
 })();
@@ -407,7 +424,7 @@ window.mxZahlung={oeffne,verlInRest,gespeichert,
     return LK};
   const tag=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
   window.mxListenkopf.zeit=[["heute","Heute"],["woche","Diese Woche"],["naechsteW","Nächste Woche"],["monat","Dieser Monat"],["vormonat","Letzter Monat"],["naechsterM","Nächster Monat"],["jahr","Dieses Jahr"]];
-  window.mxListenkopf.freiText=freiText;
+  window.mxListenkopf.freiText=freiText;window.mxListenkopf.monatWahl=monatBlatt;   // Monat und Jahr auch ohne Filterfeld: monatWahl(titel,false,"",[datenMonate],"JJJJ-MM",w=>…), leer = aktueller Monat
   /* Liegt eine Miete im Zeitraum? Bei von/bis mit Uhrzeit minutengenau, bei den festen Knöpfen wie bisher nach Tagen */
   window.mxListenkopf.ueberlappt=function(w,vd,vu,bd,bu){const s=window.mxListenkopf.spanne(w);if(!s)return true;
     if(freiTeile(w)){const an=vd?vd+"T"+(vu||"00:00"):"",en=(bd||vd)?(bd||vd)+"T"+(bu||"23:59"):"";return an<=s[1]&&en>=s[0]}
@@ -514,12 +531,11 @@ document.addEventListener("DOMContentLoaded",()=>{if(window.mxEntwurf){window.G_
 
 /* ---------- Anzeige ---------- */
 function einnahmenListe(){const l=[];
-  lies("mietixVorgaenge",[]).forEach(v=>{const z=v.zahlung||{};
-    [["anz","Anzahlung"],["rest","Rest"]].forEach(([k,t])=>{const r=z[k];if(r&&r.am&&zahl(r.betrag))l.push({datum:r.am,betrag:zahl(r.betrag),auto:v.auto,name:v.name,was:t,nr:v.nr})});
-    const e=v.endabrechnung||{},eB=e.bezahlt?(e.bezahlt.betrag!=null?+e.bezahlt.betrag||0:+e.summe||0):0;if(e.bezahlt&&e.bezahlt.am&&eB>0)l.push({datum:e.bezahlt.am,betrag:eB,auto:v.auto,name:v.name,was:"Endabrechnung",nr:v.nr});   // geänderte Kosten: gezählt wird, was wirklich bezahlt ist (05.11.2026)
-    const kr=v.kautionRueck||{},ueber=(+kr.einbehalt||0)-eB;if(kr.verrechnet&&ueber>0)l.push({datum:kr.am||(v.rueck||{}).datum||v.bisD||"",betrag:ueber,auto:v.auto,name:v.name,was:"Aus der Kaution",nr:v.nr})});
+  // Dieselbe Rechnung wie die Seite Monat (mxZahlung.posten, 09.11.2026): je Posten eine Zeile im Monat seiner Zahlung, Offenes (ohne Datum) zählt nicht
+  const WORT={"Mietpreis Rest":"Rest","Nachzahlung Rückgabe":"Endabrechnung","Kaution einbehalten":"Aus der Kaution"};
+  lies("mietixVorgaenge",[]).filter(v=>v&&!v._weg&&v.nr).forEach(v=>mxZahlung.posten(v).forEach(p=>{if(p.am)l.push({datum:p.am,betrag:p.b,auto:v.auto,name:v.name,was:WORT[p.t]||p.t,nr:v.nr})}));
   // Anzahlung einer Reservierung, die noch keinen Mietvertrag hat, zählt schon als eingegangen (04.11.2026)
-  lies("mietixAnfragen",[]).forEach(a=>{const z=a.anzahlung||{};if(!a._weg&&a.status!=="abgesagt"&&!a.vertrag&&z.am&&zahl(z.betrag))l.push({datum:z.am,betrag:zahl(z.betrag),auto:a.auto||"",name:a.name||"",was:"Anzahlung",nr:"",aid:a.id,gebucht:a.status==="gebucht"})});
+  lies("mietixAnfragen",[]).forEach(a=>{const z=(a||{}).anzahlung||{};if(a&&!a._weg&&a.status!=="abgesagt"&&!a.vertrag&&/^\d{4}-\d\d-\d\d$/.test(String(z.am||""))&&zahl(z.betrag))l.push({datum:z.am,betrag:zahl(z.betrag),auto:a.auto||"",name:a.name||"",was:"Anzahlung",nr:"",aid:a.id,gebucht:a.status==="gebucht"})});
   return l.sort((a,b)=>b.datum.localeCompare(a.datum))}
 // Lange Listen: nichts wird still abgeschnitten, der Rest kommt auf Tipp (04.11.2026)
 const GELD_ZEIG={liste:15,einnahmen:10};
