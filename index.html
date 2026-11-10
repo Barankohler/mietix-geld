@@ -303,7 +303,7 @@ function oeffne(schl){const f=blatt();
       '<div class="fz grund"><label>Grund</label>'+feld("eGrund",kEin?kr.grund:"","text","Schaden, Reinigung, Tank")+'</div>'+
       zeile("Zurückgegeben","Datum leer: noch nicht",feld("eZur",kr.betrag!=null?+kr.betrag||0:0),feld("eZurAm",kr.am,"tag"))+'</div>'+
       '<div class="fhin" id="eHin"></div>'+
-      '<div class="fknoepfe"><a href="'+esc(MAPPE(v.nr))+'">Mappe öffnen</a><button type="button" class="r" id="eSp">Speichern</button></div>';
+      '<div class="fknoepfe"><a href="'+esc(MAPPE(v.nr))+'">Buchung öffnen</a><button type="button" class="r" id="eSp">Speichern</button></div>';
     f.innerHTML=h}
   f.querySelectorAll("input").forEach(i=>i.addEventListener("input",pruefe));
   $("eSp").onclick=speichern;
