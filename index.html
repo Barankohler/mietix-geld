@@ -60,6 +60,14 @@ a.eLink{color:inherit;text-decoration:none}a.eLink:active{background:#F2F2F7}
 .ePfeil{flex:none;font-style:normal;color:#C7C7CC;font-size:22px;line-height:1;margin-left:-2px}
 .eintrag>.gRe{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}   /* Betrag und darunter Ändern (08.11.2026) */
 details summary{cursor:pointer;font-weight:700;color:var(--grau);font-size:13px;margin-top:10px}
+/* Ausgabe oder Einnahme (16.11.2026): zwei Knöpfe oben im Eintragefeld, gewählt dunkel wie jede Auswahl */
+.richtung{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.richtung .chip{text-align:center;background:#F2F2F7;border-color:#F2F2F7}.richtung .chip.an{background:#1C1C1E!important;border-color:#1C1C1E!important;color:#fff}
+#arten.rein .chip[data-raus],#arten:not(.rein) .chip[data-rein],#artenMehr.rein{display:none!important}#arten.rein #mehrArten{display:none}
+/* Fixkosten (16.11.2026): wie die Liste darüber, je Auto eine Überschrift */
+.fixKopf{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--grau);margin:16px 0 2px;display:flex;justify-content:space-between;gap:8px}
+.fixKopf:first-child{margin-top:4px}
+#fFix select{width:100%;margin:0;border:0;border-radius:10px;background:#fff;padding:9px 10px;font-size:16px;font-weight:600;color:#1C1C1E;min-height:44px;font-family:inherit}
 
 .mxKnopf,.mxKlapp>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;background:#fff;border:1.5px solid #E4E4E7;border-radius:16px;padding:14px 16px;min-height:60px;text-align:left;font-family:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);color:#1C1C1E;margin:0 0 10px;-webkit-tap-highlight-color:transparent}
 .mxKnopf span,.mxKlapp>summary span{flex:1;min-width:0}
@@ -622,11 +630,12 @@ window.mxZahlung={storno,anfragePosten,geh,oeffne,verlInRest,posten,gespeichert,
 <div id="abgleich"></div>
 
 <div class="karte" id="gForm">
-  <h2>Ausgabe eintragen</h2>
+  <div class="richtung" id="richtung"><div class="chip an" data-r="raus">Ausgabe</div><div class="chip" data-r="rein">Einnahme</div></div>
+  <h2 id="gTitel">Ausgabe eintragen</h2>
   <label>Welches Auto?</label>
   <div class="autos" id="autos"></div>
-  <label>Wofür?</label>
-  <div class="chips" id="arten"><div class="chip" data-v="Tanken">Tanken</div><div class="chip" data-v="Wäsche/Aufbereitung">Wäsche</div><div class="chip" data-v="Wartung/Service ">Service</div><div class="chip" data-v="Reparatur/Schaden">Reparatur</div><div class="chip" data-v="Sonstiges">Sonstiges</div><div class="chip klein" id="mehrArten">mehr …</div></div>
+  <label id="artLabel">Wofür?</label>
+  <div class="chips" id="arten"><div class="chip" data-v="Tanken" data-raus>Tanken</div><div class="chip" data-v="Wäsche/Aufbereitung" data-raus>Wäsche</div><div class="chip" data-v="Wartung/Service " data-raus>Service</div><div class="chip" data-v="Reparatur/Schaden" data-raus>Reparatur</div><div class="chip" data-v="Sonstiges" data-raus>Sonstiges</div><div class="chip" data-v="Selbstbeteiligung Kunde" data-rein>Selbstbeteiligung</div><div class="chip" data-v="Kaution einbehalten" data-rein>Kaution</div><div class="chip" data-v="Versicherungsauszahlung" data-rein>Versicherung</div><div class="chip" data-v="Auto verkauft" data-rein>Auto verkauft</div><div class="chip" data-v="Sonstiges" data-rein>Sonstiges</div><div class="chip" data-v="Miete" data-rein>Miete</div><div class="chip klein" id="mehrArten">mehr …</div></div>
   <div class="chips versteckt" id="artenMehr" style="margin-top:7px"><div class="chip" data-v="Werbung">Werbung</div><div class="chip" data-v="Portale/Abos">Portale/Abos</div><div class="chip" data-v="Anwalt/Inkasso">Anwalt/Inkasso</div><div class="chip" data-v="Büromiete+Stellplatz">Büro/Stellplatz</div><div class="chip" data-v="Löhne">Löhne</div></div>
   <label>Betrag €</label>
   <input id="betrag" inputmode="decimal" placeholder="0,00">
@@ -639,10 +648,10 @@ window.mxZahlung={storno,anfragePosten,geh,oeffne,verlInRest,posten,gespeichert,
 <div class="karte">
   <h2>Diesen Monat</h2>
   <div class="drei" style="grid-template-columns:1fr 1fr">   <!-- "Übrig" weg: wirkte wie ein Kassenstand (Liste Punkt 12) -->
-    <div class="zahl rein"><b id="rein">0 €</b><i>Rein (Mieten)</i></div>
+    <div class="zahl rein"><b id="rein">0 €</b><i>Rein (Mieten und von Hand)</i></div>
     <div class="zahl raus"><b id="raus">0 €</b><i>Raus (hier eingetragen)</i></div>
   </div>
-  <div class="hinweis">Rein kommt aus den Mietverträgen: Anzahlung und Rest, sobald dort ein Bezahlt-Datum steht. Fixkosten stehen in der Excel, nicht hier.</div>
+  <div class="hinweis">Rein kommt aus den Mietverträgen (Anzahlung und Rest, sobald dort ein Bezahlt-Datum steht) und aus Einnahmen von Hand. Fixkosten stehen unten bei Fixkosten.</div>
 </div>
 
 <div id="geldLK"></div>
@@ -651,10 +660,17 @@ window.mxZahlung={storno,anfragePosten,geh,oeffne,verlInRest,posten,gespeichert,
   <div id="liste"></div>
 </div>
 
-<details class="mxKlapp"><summary><span><b>Einnahmen aus Mietverträgen</b><i>Bezahlte Mieten, antippen öffnet den Mietvertrag</i></span><em>›</em></summary>
+<details class="mxKlapp"><summary><span><b>Einnahmen</b><i>Aus Mietverträgen und von Hand, antippen öffnet den Mietvertrag</i></span><em>›</em></summary>
 <div class="karte">
   <div id="einnahmen"></div>
-  <div class="hinweis">Was im Mietvertrag als bezahlt steht, kommt automatisch hierher und als „Miete“ in die Excel. Stimmt etwas nicht, auf Ändern tippen.</div>
+  <div class="hinweis">Was im Mietvertrag als bezahlt steht, kommt automatisch hierher. Andere Einnahmen oben mit „Einnahme“ eintragen. Stimmt etwas nicht, auf Ändern tippen.</div>
+</div></details>
+
+<details class="mxKlapp" id="fixKlapp" style="margin-top:12px"><summary><span><b>Fixkosten</b><i id="fixSum">Jeden Monat, antippen zum Ändern</i></span><em>›</em></summary>
+<div class="karte">
+  <div id="fixListe"></div>
+  <button type="button" class="mehrZeigen" id="fixNeu">Fixkosten-Posten hinzufügen</button>
+  <div class="hinweis">Fixkosten zählen ab November 2026 jeden Monat von selbst auf der Seite Zahlen. Davor stehen sie bei den Ausgaben.</div>
 </div></details>
 </main>
 <div class="leiste"><button id="haupt">Ausgabe eintragen</button></div>
@@ -672,12 +688,12 @@ const eur=n=>{const v=typeof n==="number"?n:zahl(n)||0,ganz=Math.abs(v-Math.roun
 const esc=t=>String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
 const MAPPE=nr=>"https://barankohler.github.io/mietix-vertrag/?nr="+encodeURIComponent(nr)+"&amp;zeige=mappe&amp;von=Geld";
 function meldung(t){const m=$("meldung");m.textContent=t;m.style.display="block";setTimeout(()=>m.style.display="none",2400)}
-let AUTO=null,ART=null,D=null;
+let AUTO=null,ART=null,D=null,RICHTUNG="raus";   // RICHTUNG: Ausgabe (raus) oder Einnahme von Hand (rein), 16.11.2026
 const ALLGEMEIN="Allgemein (kein Auto)";
 // Gewähltes Auto und „Wofür“ bleiben beim Neuladen stehen, am selben Tag (10.11.2026, Prüfung: nur Betrag, Notiz und Datum kamen wieder)
 const WAHL_K="mietixFeld:geldWahl";
-function wahlMerken(){try{if(AUTO||ART)localStorage.setItem(WAHL_K,JSON.stringify({tag:iso(new Date()),auto:AUTO,art:ART}));else localStorage.removeItem(WAHL_K)}catch(e){}}
-{let w=null;try{w=JSON.parse(localStorage.getItem(WAHL_K)||"null")}catch(e){}if(w&&w.tag===iso(new Date())){AUTO=w.auto||null;ART=w.art||null}}
+function wahlMerken(){try{if(AUTO||ART||RICHTUNG==="rein")localStorage.setItem(WAHL_K,JSON.stringify({tag:iso(new Date()),auto:AUTO,art:ART,richtung:RICHTUNG}));else localStorage.removeItem(WAHL_K)}catch(e){}}
+{let w=null;try{w=JSON.parse(localStorage.getItem(WAHL_K)||"null")}catch(e){}if(w&&w.tag===iso(new Date())){AUTO=w.auto||null;ART=w.art||null;RICHTUNG=w.richtung==="rein"?"rein":"raus"}}
 
 /* ---------- Autos: aus der Preisdatei, wie überall ---------- */
 function zeichneAutos(){const namen=(D&&D.cars?D.cars.map(c=>c.anzeige||c.n):[]).concat([ALLGEMEIN]);
@@ -691,8 +707,18 @@ zeichneAutos();
 function chips(){[...document.querySelectorAll("#arten .chip[data-v], #artenMehr .chip[data-v]")].forEach(c=>{
   c.classList.toggle("an",c.dataset.v===ART);c.onclick=()=>{ART=c.dataset.v;wahlMerken();chips()}})
   // Auswahl sichtbar: liegt die gewählte Art unter „Mehr“, bleibt sie aufgeklappt
-  if(ART&&[...document.querySelectorAll("#artenMehr .chip[data-v]")].some(c=>c.dataset.v===ART))$("artenMehr").classList.remove("versteckt")}
-chips();
+  if(ART&&RICHTUNG==="raus"&&[...document.querySelectorAll("#artenMehr .chip[data-v]")].some(c=>c.dataset.v===ART))$("artenMehr").classList.remove("versteckt")}
+/* ---------- Ausgabe oder Einnahme (16.11.2026) ---------- */
+const ARTEN_RAUS=[...document.querySelectorAll("#arten .chip[data-raus],#artenMehr .chip[data-v]")].map(c=>[c.dataset.v,c.textContent]);
+const ARTEN_REIN=[...document.querySelectorAll("#arten .chip[data-rein]")].map(c=>[c.dataset.v,c.textContent]);
+function richtungSetzen(r,still){RICHTUNG=r==="rein"?"rein":"raus";const rein=RICHTUNG==="rein";
+  document.querySelectorAll("#richtung .chip").forEach(c=>c.classList.toggle("an",c.dataset.r===RICHTUNG));
+  $("arten").classList.toggle("rein",rein);$("artenMehr").classList.toggle("rein",rein);
+  $("gTitel").textContent=rein?"Einnahme eintragen":"Ausgabe eintragen";$("artLabel").textContent=rein?"Wodurch kam Geld rein?":"Wofür?";$("haupt").textContent=rein?"Einnahme eintragen":"Ausgabe eintragen";
+  if(ART&&!(rein?ARTEN_REIN:ARTEN_RAUS).some(a=>a[0]===ART))ART=null;   // Art der anderen Seite gilt hier nicht
+  if(!still)wahlMerken();chips()}
+document.querySelectorAll("#richtung .chip").forEach(c=>c.onclick=()=>richtungSetzen(c.dataset.r));
+richtungSetzen(RICHTUNG,true);
 $("mehrArten").onclick=()=>{$("artenMehr").classList.toggle("versteckt")};
 
 /* ---------- Eintragen ---------- */
@@ -702,16 +728,18 @@ $("haupt").onclick=()=>{
   if(!AUTO){if(window.mxFehler)mxFehler("Bitte ein Auto antippen",4000);else meldung("Bitte ein Auto antippen");return}
   if(!ART){meldung("Bitte antippen, wofür");return}
   if(!b||b<0){meldung(b<0?"Der Betrag darf nicht negativ sein":"Bitte den Betrag eintragen");$("betrag").focus();return}
-  const a=lies("mietixAusgaben",[]);
+  const a=lies("mietixAusgaben",[]),rein=RICHTUNG==="rein",WORT=rein?"Einnahme":"Ausgabe";
   // Sicherheitsnetz: dieselbe Ausgabe zweimal kurz hintereinander (zweimal getippt, Enter doppelt) wird nachgefragt
   const letzte=a[a.length-1];
-  if(letzte&&letzte.art===ART&&letzte.betrag===Math.round(b*100)/100&&(letzte.auto||"")===(AUTO===ALLGEMEIN?"":AUTO)
-     &&Date.now()-new Date(letzte.erstellt||0).getTime()<120000&&!confirm("Genau diese Ausgabe wurde gerade eben eingetragen. Wirklich noch einmal?"))return;
-  a.push({id:String(Date.now())+Math.random().toString(36).slice(2,6),datum:$("datum").value||iso(new Date()),art:ART,
-    auto:AUTO===ALLGEMEIN?"":AUTO,betrag:Math.round(b*100)/100,notiz:$("notiz").value.trim(),wer:WER(),erstellt:new Date().toISOString()});
+  if(letzte&&letzte.art===ART&&!!letzte.rein===rein&&letzte.betrag===Math.round(b*100)/100&&(letzte.auto||"")===(AUTO===ALLGEMEIN?"":AUTO)
+     &&Date.now()-new Date(letzte.erstellt||0).getTime()<120000&&!confirm("Genau diese "+WORT+" wurde gerade eben eingetragen. Wirklich noch einmal?"))return;
+  const neu={id:String(Date.now())+Math.random().toString(36).slice(2,6),datum:$("datum").value||iso(new Date()),art:ART,
+    auto:AUTO===ALLGEMEIN?"":AUTO,betrag:Math.round(b*100)/100,notiz:$("notiz").value.trim(),wer:WER(),erstellt:new Date().toISOString()};
+  if(rein)neu.rein=true;   // Einnahme von Hand (16.11.2026): zählt bei Rein, nicht bei Raus
+  a.push(neu);
   if(!schreib("mietixAusgaben",a))return;   // nicht gespeichert: Eingabe bleibt stehen
   if(window.G_ENT)G_ENT.weg();
-  meldung(eur(b)+" "+ART.trim()+(AUTO===ALLGEMEIN?"":", "+AUTO)+" eingetragen");
+  meldung(eur(b)+" "+ART.trim()+(AUTO===ALLGEMEIN?"":", "+AUTO)+(rein?" als Einnahme":"")+" eingetragen");
   $("betrag").value="";$("notiz").value="";$("datum").value=iso(new Date());datumHand(null);ART=null;wahlMerken();chips();zeichnen()};   // anderes Datum gilt nur für diese eine Ausgabe (04.11.2026)
 $("betrag").addEventListener("keydown",e=>{if(e.key==="Enter")$("haupt").click()});
 // Entwurf nur aus dem Eingabeformular, ohne Datum (10.11.2026, Prüfung: die Suche sicherte das Datum mit, am nächsten Tag landete die Ausgabe still auf gestern)
@@ -728,16 +756,18 @@ function einnahmenListe(){const l=[];
   lies("mietixVorgaenge",[]).filter(v=>v&&!v._weg&&v.nr).forEach(v=>mxZahlung.posten(v).forEach(p=>{if(p.am)l.push({datum:p.am,betrag:p.b,auto:v.auto,name:v.name,was:WORT[p.t]||p.t,nr:v.nr})}));
   // Anzahlung einer Reservierung, die noch keinen Mietvertrag hat, zählt schon als eingegangen (04.11.2026)
   lies("mietixAnfragen",[]).forEach(a=>{mxZahlung.anfragePosten(a).forEach(p=>{if(/^\d{4}-\d\d-\d\d$/.test(String(p.am||"")))l.push({datum:p.am,betrag:p.b,auto:a.auto||"",name:a.name||"",was:p.t,nr:"",aid:a.id,gebucht:a.status==="gebucht"})})});   // auch nach einem Storno (09.11.2026)
+  // Einnahmen von Hand (16.11.2026, auch die alten aus der Excel): Ändern wie bei einer Ausgabe
+  lies("mietixAusgaben",[]).forEach(x=>{if(x&&x.rein&&/^\d{4}-\d\d-\d\d$/.test(String(x.datum||"")))l.push({datum:x.datum,betrag:zahl(x.betrag)||0,auto:x.auto||"",name:x.notiz||String(x.art||"").trim(),was:String(x.art||"").trim()+", von Hand",nr:"",hand:x.id})});
   return l.sort((a,b)=>b.datum.localeCompare(a.datum))}
 // Lange Listen: nichts wird still abgeschnitten, der Rest kommt auf Tipp (04.11.2026)
 const GELD_ZEIG={liste:15,einnahmen:10};
 const mehrKnopf=(wo,n)=>n>GELD_ZEIG[wo]?'<button type="button" class="mehrZeigen" data-m="'+wo+'">Weitere zeigen, noch '+(n-GELD_ZEIG[wo])+'</button>':"";
 const MON_NAME=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const GELD_LK=mxListenkopf("geldLK","geld",{suche:"Name, Auto oder Art",felder:[{k:"mon",t:"Monat",alle:"Alle Monate",monate:"alle",werte:()=>[...new Set(lies("mietixAusgaben",[]).map(x=>x.datum).concat(einnahmenListe().map(x=>x.datum)).filter(Boolean).map(d=>d.slice(0,7)))].sort().reverse().map(m=>[m,MON_NAME[+m.slice(5,7)-1]+" "+m.slice(0,4)])},
-  {k:"art",t:"Art",alle:"Alle Arten",werte:()=>[...new Set(lies("mietixAusgaben",[]).map(x=>String(x.art||"").trim()).filter(Boolean))].sort().map(a=>[a,a])}],neu:()=>{GELD_ZEIG.liste=15;GELD_ZEIG.einnahmen=10;zeichnen()}});
+  {k:"art",t:"Art",alle:"Alle Arten",werte:()=>[...new Set(lies("mietixAusgaben",[]).filter(x=>x&&!x.rein).map(x=>String(x.art||"").trim()).filter(Boolean))].sort().map(a=>[a,a])}],neu:()=>{GELD_ZEIG.liste=15;GELD_ZEIG.einnahmen=10;zeichnen()}});
 function zeichnen(){
   const monat=iso(new Date()).slice(0,7);
-  let a=lies("mietixAusgaben",[]).slice().sort((x,y)=>(String(y.datum||"")+String(y.erstellt||"")).localeCompare(String(x.datum||"")+String(x.erstellt||"")));
+  let a=lies("mietixAusgaben",[]).filter(x=>x&&!x.rein).sort((x,y)=>(String(y.datum||"")+String(y.erstellt||"")).localeCompare(String(x.datum||"")+String(x.erstellt||"")));   // Einnahmen von Hand stehen bei den Einnahmen (16.11.2026)
   let e=einnahmenListe();
   const rein=Math.round(e.filter(x=>String(x.datum||"").slice(0,7)===monat).reduce((s,x)=>s+(zahl(x.betrag)||0),0));
   const raus=Math.round(a.filter(x=>String(x.datum||"").slice(0,7)===monat).reduce((s,x)=>s+(zahl(x.betrag)||0),0)*100)/100;   // Ausgaben mit Cent (11.11.2026, strenge Prüfung Punkt 19), ganze Euro nur bei Mieten; Text-Beträge zählen mit (1.11.2026: stand „092,40 €“)
@@ -751,29 +781,32 @@ function zeichnen(){
   [...$("liste").querySelectorAll(".weg")].forEach(w=>w.onclick=()=>ausgabeWeg(w.parentElement.dataset.id));
   [...$("liste").querySelectorAll("[data-ae]")].forEach(k=>k.onclick=()=>aeOeffne(k.dataset.ae));
   // Jede Einnahme gehört zu einem Mietvertrag: Antippen öffnet dessen Mappe (1.11.2026, „Es muss alles verbunden sein“)
-  $("einnahmen").innerHTML=e.length?e.slice(0,GELD_ZEIG.einnahmen).map(x=>{const innen='<div><b>'+esc(x.name)+'</b><i>'+de(x.datum)+", "+x.was+(x.auto?", "+esc(x.auto):"")+(x.nr?" (Nr. "+esc(x.nr)+")":"")+'</i></div><div class="gRe"><span class="betrag" style="color:var('+(x.betrag<0?"--rot":"--gruen")+')">'+eur(x.betrag)+'</span>'+(x.nr?mxZahlung.knopf("v:"+x.nr):x.aid?mxZahlung.knopf("a:"+x.aid):"")+'</div>';
+  $("einnahmen").innerHTML=e.length?e.slice(0,GELD_ZEIG.einnahmen).map(x=>{const innen='<div><b>'+esc(x.name)+'</b><i>'+de(x.datum)+", "+esc(x.was)+(x.auto?", "+esc(x.auto):"")+(x.nr?" (Nr. "+esc(x.nr)+")":"")+'</i></div><div class="gRe"><span class="betrag" style="color:var('+(x.betrag<0?"--rot":"--gruen")+')">'+eur(x.betrag)+'</span>'+(x.nr?mxZahlung.knopf("v:"+x.nr):x.aid?mxZahlung.knopf("a:"+x.aid):x.hand?'<button type="button" class="mxAe" data-ae="'+esc(x.hand)+'">Ändern</button>':"")+'</div>';
+    if(x.hand)return'<div class="eintrag" data-id="'+esc(x.hand)+'">'+innen+'</div>';   // Einnahme von Hand: Ändern öffnet dasselbe Fenster wie bei einer Ausgabe
     // Anzahlung ohne Mietvertrag (Prüfung 06.11.2026): führt zur Buchung bzw. zur Anfrage, wie im Kalender
     const zuAnfrage=x.aid?(x.gebucht?"https://barankohler.github.io/mietix-vertrag/?buchung=":"https://barankohler.github.io/mietix-anfragen/?zeige=")+encodeURIComponent(x.aid)+(x.gebucht?"&von=Geld":""):"";   // Zurück führt nach Geld (06.11.2026)
     return x.nr?'<a class="eintrag eLink" href="'+MAPPE(x.nr)+'" data-nr="'+esc(x.nr)+'">'+innen+'<em class="ePfeil">›</em></a>':zuAnfrage?'<a class="eintrag eLink" href="'+esc(zuAnfrage)+'" data-aid="'+esc(x.aid)+'">'+innen+'<em class="ePfeil">›</em></a>':'<div class="eintrag">'+innen+'</div>'}).join("")+mehrKnopf("einnahmen",e.length):'<div class="leer">Noch keine bezahlte Miete in den Mietverträgen.</div>';
-  document.querySelectorAll(".mehrZeigen").forEach(b=>b.onclick=()=>{GELD_ZEIG[b.dataset.m]+=30;zeichnen()})}
+  [...$("einnahmen").querySelectorAll("[data-ae]")].forEach(k=>k.onclick=()=>aeOeffne(k.dataset.ae));
+  document.querySelectorAll(".mehrZeigen[data-m]").forEach(b=>b.onclick=()=>{GELD_ZEIG[b.dataset.m]+=30;zeichnen()});
+  fixZeichnen()}
 /* ---------- Ausgabe ändern (08.11.2026): gleiches Fenster wie bei den Mieten, bisher ging nur Löschen ---------- */
-function ausgabeWeg(id){const x=lies("mietixAusgaben",[]).find(y=>y.id===id)||{};
-  if(!confirm("Ausgabe "+eur(x.betrag||0)+(x.art?" "+x.art:"")+(x.auto?", "+x.auto:"")+" löschen?"))return false;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(y=>y.id!==id));zeichnen();
-  if(window.mxRueckBar)mxRueckBar("Ausgabe gelöscht",()=>{const l=lies("mietixAusgaben",[]);if(!l.some(y=>y.id===id)){l.push(x);schreib("mietixAusgaben",l)}zeichnen()});return true}
+function ausgabeWeg(id){const x=lies("mietixAusgaben",[]).find(y=>y.id===id)||{},W=x.rein?"Einnahme":"Ausgabe";
+  if(!confirm(W+" "+eur(x.betrag||0)+(x.art?" "+x.art:"")+(x.auto?", "+x.auto:"")+" löschen?"))return false;schreib("mietixAusgaben",lies("mietixAusgaben",[]).filter(y=>y.id!==id));zeichnen();
+  if(window.mxRueckBar)mxRueckBar(W+" gelöscht",()=>{const l=lies("mietixAusgaben",[]);if(!l.some(y=>y.id===id)){l.push(x);schreib("mietixAusgaben",l)}zeichnen()});return true}
 let AE=null;
-const aeArten=()=>[...document.querySelectorAll("#arten .chip[data-v],#artenMehr .chip[data-v]")].map(c=>[c.dataset.v,c.textContent]);
+const aeArten=()=>AE&&AE.rein?ARTEN_REIN:ARTEN_RAUS;   // Einnahme von Hand: Wörter für Geld rein (16.11.2026)
 const aeAutos=()=>(D&&D.cars?D.cars.map(c=>c.anzeige||c.n):[]).map(n=>[n,n]).concat([["",ALLGEMEIN]]);
 const aeArtText=v=>{const t=aeArten().find(a=>a[0].trim()===String(v||"").trim());return t?t[1]:String(v||"").trim()};
 const aeAutoText=v=>v||ALLGEMEIN;
 function aeOeffne(id){const x=lies("mietixAusgaben",[]).find(y=>y.id===id);if(!x){if(window.mxFehler)mxFehler("Diese Ausgabe ist hier nicht mehr vorhanden. Bitte Seite neu laden.",4000);return}
   let f=$("fAusgabe");if(!f){f=document.createElement("div");f.id="fAusgabe";f.className="mxFenster mxZa mxSchutz";f.setAttribute("role","dialog");f.setAttribute("aria-label","Ausgabe ändern");document.body.appendChild(f)}
-  AE={id,art:x.art||"",auto:x.auto||""};
+  AE={id,art:x.art||"",auto:x.auto||"",rein:!!x.rein};
   const b=zahl(x.betrag),zf=(t,i)=>'<div class="fz zwei"><label>'+t+'</label>'+i+'</div>',aw=(id,t)=>'<button type="button" class="aw" id="'+id+'"><span>'+esc(t)+'</span><em>›</em></button>';
-  f.innerHTML='<div id="aeForm"><div class="mxKopf"><h3>Ausgabe ändern</h3><button class="mxZu" type="button" aria-label="Schließen">✕</button></div>'+
+  f.innerHTML='<div id="aeForm"><div class="mxKopf"><h3>'+(x.rein?"Einnahme ändern":"Ausgabe ändern")+'</h3><button class="mxZu" type="button" aria-label="Schließen">✕</button></div>'+
     '<div class="fl" style="margin:0 2px 12px">'+esc([aeArtText(x.art),x.auto].filter(Boolean).join(", "))+'</div><div class="fg">'+
     zf("Betrag",'<input id="aeBetrag" inputmode="decimal" data-einheit="€" value="'+(b==null?"":Number.isInteger(b)?String(b):b.toFixed(2).replace(".",","))+'" placeholder="0">')+
     zf("Datum",'<input id="aeDatum" type="date" value="'+esc(x.datum||"")+'" aria-label="Datum">')+
-    zf("Wofür",aw("aeArt",aeArtText(x.art)))+zf("Auto",aw("aeAuto",aeAutoText(x.auto)))+
+    zf(x.rein?"Wodurch":"Wofür",aw("aeArt",aeArtText(x.art)))+zf("Auto",aw("aeAuto",aeAutoText(x.auto)))+
     zf("Notiz",'<input id="aeNotiz" value="'+esc(x.notiz||"")+'" data-einheit="">')+'</div>'+
     '<div class="fhin" id="aeHin"></div><div class="fknoepfe"><button type="button" class="g" id="aeWeg">Löschen</button><button type="button" class="r" id="aeSp">Speichern</button></div></div><div id="aeWahl" class="versteckt" data-mxkeinwert></div>';
   $("aeArt").onclick=()=>aeWahl("art");$("aeAuto").onclick=()=>aeWahl("auto");$("aeSp").onclick=aeSpeichern;
@@ -791,7 +824,7 @@ function aeOeffne(id){const x=lies("mietixAusgaben",[]).find(y=>y.id===id);if(!x
 function aeWahl(feld){const art=feld==="art",jetzt=art?AE.art:AE.auto,gleich=(a,b)=>String(a||"").trim()===String(b||"").trim();let w=art?aeArten():aeAutos();
   if(!w.some(a=>gleich(a[0],jetzt)))w=[[jetzt,art?String(jetzt).trim():jetzt]].concat(w);   // alter Wert bleibt wählbar
   const zurueck=aeZurMaske;
-  $("aeWahl").innerHTML='<div class="mxKopf"><h3>'+(art?"Wofür?":"Welches Auto?")+'</h3><button type="button" class="mxAe" id="aeZ">‹ Zurück</button></div><div class="wl">'+w.map((a,i)=>'<button type="button" data-i="'+i+'"'+(gleich(a[0],jetzt)?' class="an"':"")+'><span>'+esc(a[1])+'</span>'+(gleich(a[0],jetzt)?'<b>✓</b>':"")+'</button>').join("")+'</div>';
+  $("aeWahl").innerHTML='<div class="mxKopf"><h3>'+(art?(AE.rein?"Wodurch kam Geld rein?":"Wofür?"):"Welches Auto?")+'</h3><button type="button" class="mxAe" id="aeZ">‹ Zurück</button></div><div class="wl">'+w.map((a,i)=>'<button type="button" data-i="'+i+'"'+(gleich(a[0],jetzt)?' class="an"':"")+'><span>'+esc(a[1])+'</span>'+(gleich(a[0],jetzt)?'<b>✓</b>':"")+'</button>').join("")+'</div>';
   $("aeZ").onclick=zurueck;
   $("aeWahl").querySelectorAll("[data-i]").forEach(k=>k.onclick=()=>{const a=w[+k.dataset.i];if(art){AE.art=a[0];$("aeArt").querySelector("span").textContent=a[1]}else{AE.auto=a[0];$("aeAuto").querySelector("span").textContent=a[1]}aeEntwurf();zurueck()});
   $("aeForm").classList.add("versteckt");$("aeWahl").classList.remove("versteckt");$("fAusgabe").scrollTop=0}
@@ -813,7 +846,60 @@ function aeSpeichern(){const nein=(t,el)=>{const h=$("aeHin");h.className="fhin 
   if(zahl(x.betrag)===neu&&x.datum===dat&&(x.art||"")===AE.art&&(x.auto||"")===AE.auto&&(x.notiz||"")===notiz){mxZu();return}   // nichts geändert
   Object.assign(x,{betrag:neu,datum:dat,art:AE.art,auto:AE.auto,notiz,geaendert:{wer:WER(),am:new Date().toISOString()}});
   if(!schreib("mietixAusgaben",l))return nein("Nicht gespeichert: der Speicher dieses Geräts ist voll. Bitte Seite neu laden und noch einmal versuchen.");
-  mxZu();zeichnen();mxZahlung.gespeichert("✓ Ausgabe geändert",()=>{const k=lies("mietixAusgaben",[]),i=k.findIndex(y=>y.id===aid);if(i>=0){k[i]=alt;schreib("mietixAusgaben",k)}zeichnen()})}
+  mxZu();zeichnen();mxZahlung.gespeichert(x.rein?"✓ Einnahme geändert":"✓ Ausgabe geändert",()=>{const k=lies("mietixAusgaben",[]),i=k.findIndex(y=>y.id===aid);if(i>=0){k[i]=alt;schreib("mietixAusgaben",k)}zeichnen()})}
+/* ---------- Fixkosten (16.11.2026): mietixStand.fixkosten, früher Reiter Fixkosten der Excel. Je Auto eine Überschrift, Unternehmen zuletzt ---------- */
+const fixDaten=()=>{const s=lies("mietixStand",{})||{};return s.fixkosten||null};
+const KUEND=["","Läuft weiter","Prüfen","Kündigen!"];
+function fixZeichnen(){const fk=fixDaten(),el=$("fixListe");if(!el)return;
+  if(!fk||!Array.isArray(fk.posten)){el.innerHTML='<div class="leer">Noch keine Fixkosten da.</div>';$("fixSum").textContent="Jeden Monat, antippen zum Ändern";return}
+  const P=fk.posten,b=p=>zahl(p.betrag)||0,s=P.reduce((q,p)=>q+b(p),0),sA=P.filter(p=>p.bereich!=="firma").reduce((q,p)=>q+b(p),0),sF=s-sA;
+  $("fixSum").textContent=eur(Math.round(s*100)/100)+" im Monat, antippen zum Ändern";
+  const gruppen=[];P.forEach(p=>{const g=p.bereich==="firma"?"Unternehmen":(p.auto||"Ohne Auto");let G=gruppen.find(x=>x.n===g);if(!G){G={n:g,l:[]};gruppen.push(G)}G.l.push(p)});
+  gruppen.sort((x,y)=>(x.n==="Unternehmen")-(y.n==="Unternehmen"));   // Autos in der Reihenfolge der Liste, Unternehmen zuletzt
+  const lim=zahl(fk.limit),kue=P.filter(p=>p.kuendbar==="Kündigen!").reduce((q,p)=>q+b(p),0),r2=n=>Math.round(n*100)/100;
+  let h='<div class="eintrag"><div><b>Zusammen '+eur(r2(s))+' im Monat</b><i>Autos '+eur(r2(sA))+', Unternehmen '+eur(r2(sF))+(kue?', auf „Kündigen!“ '+eur(r2(kue))+' im Monat':'')+'</i></div></div>'+
+    '<div class="eintrag"><div><b>Unser Limit im Monat</b><i>'+(lim?(s>lim?eur(r2(s-lim))+' darüber':eur(r2(lim-s))+' Luft bis zum Limit'):'kein Limit eingetragen')+'</i></div><div class="gRe"><span class="betrag">'+(lim?eur(lim):"")+'</span><button type="button" class="mxAe" data-fixae="limit">Ändern</button></div></div>';
+  gruppen.forEach(G=>{h+='<div class="fixKopf"><span>'+esc(G.n)+'</span><span>'+eur(r2(G.l.reduce((q,p)=>q+b(p),0)))+'</span></div>'+
+    G.l.map(p=>'<div class="eintrag"><div><b>'+esc(p.was||"Posten")+'</b><i>'+esc([p.kuendbar,p.notiz].filter(Boolean).join(", ")||(zahl(p.betrag)==null?"kein Betrag eingetragen":"jeden Monat"))+'</i></div>'+
+      '<div class="gRe"><span class="betrag">'+(zahl(p.betrag)==null?"":eur(p.betrag))+'</span><button type="button" class="mxAe" data-fixae="'+esc(p.id)+'">Ändern</button></div></div>').join("")});
+  el.innerHTML=h;el.querySelectorAll("[data-fixae]").forEach(k=>k.onclick=()=>fixOeffne(k.dataset.fixae))}
+let FX=null;
+function fixOeffne(id){const fk=fixDaten()||{posten:[]},limit=id==="limit",neu=id==="neu",p=limit||neu?null:(fk.posten||[]).find(x=>x.id===id);
+  if(!limit&&!neu&&!p){if(window.mxFehler)mxFehler("Dieser Posten ist hier nicht mehr vorhanden. Bitte Seite neu laden.",4000);return}
+  let f=$("fFix");if(!f){f=document.createElement("div");f.id="fFix";f.className="mxFenster mxZa mxSchutz";f.setAttribute("role","dialog");f.setAttribute("aria-label","Fixkosten ändern");document.body.appendChild(f)}
+  FX={id,limit,neu};
+  const zf=(t,i)=>'<div class="fz zwei"><label>'+t+'</label>'+i+'</div>',b=limit?zahl(fk.limit):p?zahl(p.betrag):null,bt=b==null?"":Number.isInteger(b)?String(b):b.toFixed(2).replace(".",",");
+  const autos=D&&D.cars?D.cars.map(c=>c.anzeige||c.n):[],jetzt=p&&p.bereich!=="firma"?(p.auto||""):"";
+  const liste=jetzt&&!autos.includes(jetzt)?[jetzt].concat(autos):autos;   // alter Name bleibt wählbar
+  f.innerHTML='<div class="mxKopf"><h3>'+(limit?"Limit im Monat":neu?"Neuer Fixkosten-Posten":"Fixkosten ändern")+'</h3><button class="mxZu" type="button" aria-label="Schließen">✕</button></div><div class="fg">'+
+    (limit?"":zf("Was genau?",'<input id="fxWas" value="'+esc(p?p.was:"")+'" placeholder="zum Beispiel Versicherung" data-einheit="">'))+
+    zf(limit?"Limit":"Betrag im Monat",'<input id="fxBetrag" inputmode="decimal" data-einheit="€" value="'+bt+'" placeholder="0">')+
+    (limit?"":zf("Auto",'<select id="fxAuto"><option value="">Unternehmen (kein Auto)</option>'+liste.map(a=>'<option value="'+esc(a)+'"'+(a===jetzt?" selected":"")+'>'+esc(a)+'</option>').join("")+'</select>')+
+      zf("Kündbar?",'<select id="fxKuend">'+KUEND.map(k=>'<option value="'+esc(k)+'"'+(((p&&p.kuendbar)||"")===k?" selected":"")+'>'+(k||"nicht gewählt")+'</option>').join("")+'</select>')+
+      zf("Notiz",'<input id="fxNotiz" value="'+esc(p?p.notiz:"")+'" data-einheit="">'))+
+    '</div><div class="fhin" id="fxHin"></div><div class="fknoepfe">'+(p?'<button type="button" class="g" id="fxWeg">Löschen</button>':'')+'<button type="button" class="r" id="fxSp">Speichern</button></div>';
+  $("fxSp").onclick=fixSpeichern;if(p)$("fxWeg").onclick=()=>fixWeg(p.id);
+  mxAuf("fFix");if(typeof window.mxEinheit==="function")mxEinheit()}
+// Ganze Liste in einem Zug ändern, die alte Fassung kommt mit „Rückgängig“ zurück
+function fixSchreiben(fn){const st=lies("mietixStand",{})||{},alt=st.fixkosten?JSON.parse(JSON.stringify(st.fixkosten)):null,fk=JSON.parse(JSON.stringify(st.fixkosten||{posten:[]}));
+  if(!Array.isArray(fk.posten))fk.posten=[];fn(fk);fk.geaendert={wer:WER(),am:new Date().toISOString()};st.fixkosten=fk;return schreib("mietixStand",st)?{alt}:null}
+function fixZurueck(alt){const st=lies("mietixStand",{})||{};if(alt)st.fixkosten=alt;else delete st.fixkosten;schreib("mietixStand",st);zeichnen()}
+function fixSpeichern(){const nein=(t,el)=>{const h=$("fxHin");h.className="fhin rot";h.textContent=t;if(el)el.classList.add("falsch")};
+  const roh=$("fxBetrag").value.trim(),b=roh?zahl(roh):null;
+  if(roh&&(b===null||b<0))return nein("Bitte nur Zahlen, zum Beispiel 394,79.",$("fxBetrag"));
+  let r;
+  if(FX.limit)r=fixSchreiben(fk=>{fk.limit=b==null?null:Math.round(b*100)/100});
+  else{const was=$("fxWas").value.trim();if(!was)return nein("Bitte eintragen, was das ist.",$("fxWas"));
+    const auto=$("fxAuto").value,neuP={bereich:auto?"auto":"firma",auto,was,betrag:b==null?null:Math.round(b*100)/100,kuendbar:$("fxKuend").value,notiz:$("fxNotiz").value.trim()};
+    r=fixSchreiben(fk=>{if(FX.neu)fk.posten.push(Object.assign({id:"f"+String(Date.now())+Math.random().toString(36).slice(2,6)},neuP));else{const i=fk.posten.findIndex(x=>x.id===FX.id);if(i>=0)fk.posten[i]=Object.assign({},fk.posten[i],neuP)}})}
+  if(!r)return nein("Nicht gespeichert: der Speicher dieses Geräts ist voll. Bitte Seite neu laden und noch einmal versuchen.");
+  const text=FX.limit?"✓ Limit gespeichert":FX.neu?"✓ Fixkosten-Posten eingetragen":"✓ Fixkosten gespeichert";mxZu();zeichnen();
+  if(window.mxRueckBar)mxRueckBar(text,()=>fixZurueck(r.alt));else meldung(text)}
+function fixWeg(id){const fk=fixDaten()||{},p=(fk.posten||[]).find(x=>x.id===id);if(!p)return;
+  if(!confirm("Fixkosten-Posten „"+(p.was||"Posten")+"“"+(p.auto?" ("+p.auto+")":"")+" löschen?"))return;
+  const r=fixSchreiben(fk=>{fk.posten=fk.posten.filter(x=>x.id!==id)});if(!r)return;mxZu();zeichnen();
+  if(window.mxRueckBar)mxRueckBar("Fixkosten-Posten gelöscht",()=>fixZurueck(r.alt),8000);else meldung("Fixkosten-Posten gelöscht")}
+$("fixNeu").onclick=()=>fixOeffne("neu");
 mxZahlung.setup({von:"Geld",nachher:()=>zeichnen(),unten:96});
 $("datum").value=iso(new Date());
 {let w=null;try{w=JSON.parse(localStorage.getItem(DATUM_K)||"null")}catch(e){}if(w&&w.tag===iso(new Date())&&/^\d{4}-\d\d-\d\d$/.test(w.datum||"")){DATUM_HAND=w;$("datum").value=w.datum;const dt=$("datum").closest("details");if(dt)dt.open=true}else datumHand(null)}   // anderes Datum sichtbar, nie still
@@ -1224,7 +1310,7 @@ let warte=null;
 // Ohne Anmeldung gespeichert (12.11.2026): einmal je Seite ein roter Hinweis, damit es niemand übersieht. Nur auf der echten Seite, nicht im Test.
 let ohneGemeldet=false;
 function ohneAnmeldung(){if(ohneGemeldet||!/github\.io$/.test(location.hostname))return;ohneGemeldet=true;
-  setTimeout(()=>{const t="Nicht gesichert: Dieses Gerät ist nicht angemeldet. Was hier gespeichert wird, fehlt auf den anderen Geräten und in der Excel. Bitte auf der Startseite anmelden.";
+  setTimeout(()=>{const t="Nicht gesichert: Dieses Gerät ist nicht angemeldet. Was hier gespeichert wird, fehlt auf den anderen Geräten. Bitte auf der Startseite anmelden.";
     if(window.mxFehler)mxFehler(t);else alert(t)},300)}
 Storage.prototype.setItem=function(k,v){if(this===localStorage&&WACHE[k]&&typeof v==="string"&&!rueckLaeuft&&!EIGEN)v=altSchutz(k,v);
   const alt=(this===localStorage&&SPEICHER[k])?localStorage.getItem(k):null;roh.call(this,k,v);if(this===localStorage&&WACHE[k])GESEHEN[k]=v;
@@ -1240,7 +1326,7 @@ Storage.prototype.setItem=function(k,v){if(this===localStorage&&WACHE[k]&&typeof
 const NAMEN={mietixVorgaenge:"Mietvertrag",mietixAnfragen:"Anfrage",mietixKunden:"Kunde",mietixFahrzeuge:"Fahrzeug",mietixAusgaben:"Ausgabe",
   mietixSperren:"Sperre",mietixAufgaben:"Aufgabe",mietixZustand:"Zustand",mietixAutos:"Auto"};
 const BESCHRIFTUNG={mietixVorgaenge:x=>"Mietvertrag "+(x.nr||"")+" "+(x.name||""),mietixAnfragen:x=>"Anfrage "+(x.name||"")+(x.auto?", "+x.auto:""),
-  mietixAusgaben:x=>"Ausgabe "+(x.betrag!=null?(isNaN(+x.betrag)?String(x.betrag).replace(/\s*€\s*$/,""):(+x.betrag).toLocaleString("de-DE",{maximumFractionDigits:2}))+" €":"")+(x.art?", "+String(x.art).trim():"")+(x.auto?", "+x.auto:""),
+  mietixAusgaben:x=>(x.rein?"Einnahme ":"Ausgabe ")+(x.betrag!=null?(isNaN(+x.betrag)?String(x.betrag).replace(/\s*€\s*$/,""):(+x.betrag).toLocaleString("de-DE",{maximumFractionDigits:2}))+" €":"")+(x.art?", "+String(x.art).trim():"")+(x.auto?", "+x.auto:""),
   mietixSperren:x=>"Sperre "+(x.auto||"")+(x.von?" ab "+x.von.split("-").reverse().join("."):""),mietixAufgaben:x=>"Aufgabe "+(x.aufgabe||""),
   mietixZustand:x=>"Zustand "+(x.auto||"")+": "+(x.text||"")};
 let burst=null,burstZeit=null;
