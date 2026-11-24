@@ -892,10 +892,10 @@ html.nxNeu.geNeu body:not(#geRg) #einnahmen .eintrag>.ePfeil{display:none!import
 <div class="karte">
   <h2>Diesen Monat</h2>
   <div class="drei" style="grid-template-columns:1fr 1fr">   <!-- "Übrig" weg: wirkte wie ein Kassenstand (Liste Punkt 12) -->
-    <div class="zahl rein"><b id="rein">0 €</b><i>Rein (Mieten und von Hand)</i></div>
+    <div class="zahl rein"><b id="rein">0 €</b><i>Rein (Mieten und selbst eingetragen)</i></div>   <!-- (Fehlerliste F78, 24.11.2026) -->
     <div class="zahl raus"><b id="raus">0 €</b><i>Raus (hier eingetragen)</i></div>
   </div>
-  <div class="hinweis">Rein kommt aus den Mietverträgen (Anzahlung und Rest, sobald dort ein Bezahlt-Datum steht) und aus Einnahmen von Hand. Fixkosten stehen unten bei Fixkosten.</div>
+  <div class="hinweis">Rein kommt aus den Mietverträgen (Anzahlung und Rest, sobald dort ein Bezahlt-Datum steht) und aus selbst eingetragenen Einnahmen. Fixkosten stehen unten bei Fixkosten.</div>   <!-- (Fehlerliste F78, 24.11.2026) -->
 </div>
 
 <div id="geldLK"></div>
@@ -904,7 +904,7 @@ html.nxNeu.geNeu body:not(#geRg) #einnahmen .eintrag>.ePfeil{display:none!import
   <div id="liste"></div>
 </div>
 
-<details class="mxKlapp"><summary><span><b>Einnahmen</b><i>Aus Mietverträgen und von Hand, antippen öffnet den Mietvertrag</i></span><em>›</em></summary>
+<details class="mxKlapp"><summary><span><b>Einnahmen</b><i>Aus Mietverträgen und selbst eingetragen, antippen öffnet den Mietvertrag</i></span><em>›</em></summary>   <!-- (Fehlerliste F78, 24.11.2026) -->
 <div class="karte">
   <div id="einnahmen"></div>
   <div class="hinweis">Was im Mietvertrag als bezahlt steht, kommt automatisch hierher. Andere Einnahmen oben mit „Einnahme“ eintragen. Stimmt etwas nicht, auf Ändern tippen.</div>
@@ -1001,7 +1001,7 @@ function einnahmenListe(){const l=[];
   // Anzahlung einer Reservierung, die noch keinen Mietvertrag hat, zählt schon als eingegangen (04.11.2026)
   lies("mietixAnfragen",[]).forEach(a=>{mxZahlung.anfragePosten(a).forEach(p=>{if(/^\d{4}-\d\d-\d\d$/.test(String(p.am||"")))l.push({datum:p.am,betrag:p.b,auto:a.auto||"",name:a.name||"",was:p.t,nr:"",aid:a.id,gebucht:a.status==="gebucht"})})});   // auch nach einem Storno (09.11.2026)
   // Einnahmen von Hand (16.11.2026, auch die alten aus der Excel): Ändern wie bei einer Ausgabe
-  lies("mietixAusgaben",[]).forEach(x=>{if(x&&x.rein&&/^\d{4}-\d\d-\d\d$/.test(String(x.datum||"")))l.push({datum:x.datum,betrag:zahl(x.betrag)||0,auto:x.auto||"",name:x.notiz||String(x.art||"").trim(),was:String(x.art||"").trim()+", von Hand",nr:"",hand:x.id})});
+  lies("mietixAusgaben",[]).forEach(x=>{if(x&&x.rein&&/^\d{4}-\d\d-\d\d$/.test(String(x.datum||"")))l.push({datum:x.datum,betrag:zahl(x.betrag)||0,auto:x.auto||"",name:x.notiz||String(x.art||"").trim(),was:String(x.art||"").trim()+", selbst eingetragen",nr:"",hand:x.id})});   // (Fehlerliste F78, 24.11.2026)
   return l.sort((a,b)=>b.datum.localeCompare(a.datum))}
 // Lange Listen: nichts wird still abgeschnitten, der Rest kommt auf Tipp (04.11.2026)
 const GELD_ZEIG={liste:15,einnahmen:10};
@@ -1309,10 +1309,10 @@ const felderVon=x=>{const f={};if(istObj(x))Object.keys(x).forEach(n=>{f[n]=fp(x
   else if(LISTEN[n]&&Array.isArray(x[n])){const P=LISTEN[n]+"#";f[P+"n"]=String(x[n].length);
     x[n].forEach((e,i)=>{const s=P+elSchl(e,i);f[s]=fp(e);if(istObj(e))Object.keys(e).forEach(t=>f[s+"."+t]=fp(e[t]))})}});return f};
 /* Feldnamen und Werte für rote Hinweise, „Sicher?“ und das offene Fenster (11.11.2026) */
-const FNAMEN={gesamt:"Mietpreis",preis1:"Mietpreis",preis2:"Zusatzfahrer-Preis",bisD:"Rückgabe",bisU:"Rückgabeuhr",vonD:"Abholung",vonU:"Abholuhr",telefon:"Telefon",nummer:"Telefon",name:"Name",
+const FNAMEN={gesamt:"Mietpreis",preis1:"Mietpreis",preis2:"Zusatzfahrer-Preis",bisD:"Rückgabe",bisU:"Rückgabeuhr",vonD:"Übergabe",vonU:"Übergabeuhr",telefon:"Telefon",nummer:"Telefon",name:"Name",
   anschrift:"Anschrift",email:"E-Mail",geb:"Geburtsdatum",gebort:"Geburtsort",auto:"Auto",kz:"Kennzeichen",km:"km",freikm:"Inklusive km",mvRab:"Rabatt",zf:"Zusatzfahrer",paketKm:"Kilometerpaket",
   kautionArt:"Kautionsart",sb:"Selbstbeteiligung",mehrkm:"Mehr-km-Preis",ort:"Ort",status:"Status",notiz:"Notiz",ueb:"Übergabe",rueck:"Rückgabe-Protokoll",unterschrift:"Unterschrift",
-  kautionRueck:"Kaution zurück",endabrechnung:"Endabrechnung",von:"Abholung",bis:"Rückgabe",angebot:"Angebot",anzahlung:"Anzahlung",kostenVorab:"Weitere Kosten",verlaengerungen:"Verlängerung",teilzahlungen:"Teilzahlung",zahlung:"Zahlung"};
+  kautionRueck:"Kaution zurück",endabrechnung:"Endabrechnung",von:"Übergabe",bis:"Rückgabe",angebot:"Angebot",anzahlung:"Anzahlung",kostenVorab:"Weitere Kosten",verlaengerungen:"Verlängerung",teilzahlungen:"Teilzahlung",zahlung:"Zahlung"};
 const ZTEIL={anz:"Anzahlung",rest:"Rest",kaut:"Kaution"};
 // Schadenfall (F11): Namen wie auf der Seite Schäden
 const FALLFELD={status:"Stand",forderung:"Schaden",einbehalten:"Kaution behalten",frist:"Frist",fristDatum:"Frist",schritt:"Nächster Schritt",worum:"Worum es geht",gruppe:"Gruppe",
@@ -1322,7 +1322,7 @@ function feldName(p){p=(p||[]).map(String);const a=p[0],b=p[1],c=p[2];
   if(a==="faelle")return c==="belege"&&p[3]?"Beleg "+(BELEGNAME[p[3]]||p[3]):c?FALLFELD[c]||c:"Schadenfall";   // F11
   if(a==="zahlung"&&ZTEIL[b])return ZTEIL[b]+(c==="am"?(b==="kaut"?" erhalten am":" bezahlt am"):c==="art"?", Zahlart":"");
   if(a==="anzahlung")return "Anzahlung"+(b==="am"?" bezahlt am":b==="art"?", Zahlart":"");
-  if(a==="angebot"&&b)return({preis:"Mietpreis",freikm:"Inklusive km",rabatt:"Rabatt",von:"Abholung",bis:"Rückgabe",auto:"Auto"})[b]||"Angebot";
+  if(a==="angebot"&&b)return({preis:"Mietpreis",freikm:"Inklusive km",rabatt:"Rabatt",von:"Übergabe",bis:"Rückgabe",auto:"Auto"})[b]||"Angebot";
   if(a==="kautionRueck"&&b)return({einbehalt:"Einbehalt",betrag:"Kaution zurück",am:"Kaution zurück am",grund:"Grund für den Einbehalt"})[b]||"Kaution zurück";
   if(a==="verlaengerungen"||a==="teilzahlungen"){const N=a==="verlaengerungen"?"Verlängerung":"Teilzahlung",n=b!=null&&/^\d+$/.test(b)?" "+(+b+1):"";
     return N+n+(c?({aufpreis:", Aufpreis",betrag:", Betrag",bisNeu:", verlängert bis",bezahltAm:", bezahlt am",am:", am",art:", Zahlart",bezahlt:", bezahlt"})[c]||"":"")}
